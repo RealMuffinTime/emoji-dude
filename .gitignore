@@ -1,0 +1,5 @@
+.idea
+.versions
+__pycache__
+cogs/__pycache__
+log
