@@ -81,20 +81,26 @@ class Basic(commands.Cog):
 
     @commands.command(name='clear', description='clears messages')
     async def clear_command(self, ctx):
+        limit = ctx.message.content.split(" ")[-1]
+        try:
+            limit = int(limit)
+        except Exception:
+            await ctx.send(content='**ClearUp**\nIncorrect command usage.')
+            return
         message = await ctx.send(content='**ClearUp**\nDeleting...')
 
-        def is_bot_message(m):
-            if m.content.startswith("**ClearUp**"):
-                return False
-            else:
+        def is_clear_message(m):
+            if m.id != message.id:
                 return True
+            else:
+                return False
 
-        deleted = await ctx.channel.purge(limit=2000, check=is_bot_message, bulk=True)
+        deleted = await ctx.channel.purge(limit=limit + 2, check=is_clear_message, bulk=True)
 
-        await message.edit(content='**ClearUp**\nDeleted **{}** message(s)'.format(len(deleted)))
+        await message.edit(content='**ClearUp**\nDeleted **{}** message(s)'.format(len(deleted) - 1))
         await message.delete(delay=5)
 
-    @commands.command(name='emojis', aliases=['e'], description='sends much emojis')
+    @commands.command(name='emojis', aliases=['e'], description='sends much emojis, cip cap 27')
     async def emojis_command(self, ctx):
         if ctx.author.bot:
             return
