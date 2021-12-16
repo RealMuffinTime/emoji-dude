@@ -5,3 +5,4 @@ cogs/__pycache__
 log
 secret_dev.py
 secret_master.py
+test
