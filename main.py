@@ -11,8 +11,9 @@ from discord.ext import commands
 # Version 1.0.2
 #
 # New stuff
-#  -
+#  - Added a limit in `ed.clear <limit>`, you can now specify the amount of messages to delete
 # Changes
+#  - Typo fixing
 #  - Decreased the maximum emoji amount in 'ed.emojis' to 27
 
 bot = None
