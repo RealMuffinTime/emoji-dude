@@ -6,12 +6,13 @@ import secret_dev as secret
 import uuid
 from discord.ext import commands
 
-# TODO add :billed_cap: on every message of user id 443404465928667137
+# TODO
 
 # Version 1.0.2
 #
 # New stuff
 #  - Added a limit in `ed.clear <limit>`, you can now specify the amount of messages to delete
+#  - Adds :billed_cap: on every message of user id 443404465928667137
 # Changes
 #  - Typo fixing
 #  - Decreased the maximum emoji amount in 'ed.emojis' to 27

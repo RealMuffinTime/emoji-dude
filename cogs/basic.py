@@ -12,11 +12,13 @@ class Basic(commands.Cog):
 
     @commands.Cog.listener()
     async def on_message(self, ctx):
-        discord_user = ctx.author
-        if discord_user.bot:
+        author = ctx.author
+        if author.bot:
             return
         if ctx.content.startswith("ed."):
             return
+        if author.id == 443404465928667137:
+            ctx.add_reaction("billed_cap")
         text = ctx.content
         for emoji in emojis:
             if emoji[0] in text.upper():
