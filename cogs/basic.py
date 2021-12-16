@@ -17,16 +17,16 @@ class Basic(commands.Cog):
             return
         if ctx.content.startswith("ed."):
             return
-        if author.id == 443404465928667137:
-            ctx.add_reaction("billed_cap")
-        text = ctx.content
-        for emoji in emojis:
-            if emoji[0] in text.upper():
-                await ctx.add_reaction(emoji[2])
-                if emoji[0] == "COOL":
-                    await ctx.add_reaction(emoji[3])
-                    await ctx.add_reaction(emoji[4])
-                    await ctx.add_reaction(emoji[5])
+        if ctx.channel.permissions_for(ctx.guild.me).add_reactions:
+            if author.id == 412235309204635649:
+                await ctx.add_reaction("🧢")
+            for emoji in emojis:
+                if emoji[0] in ctx.content.upper():
+                    await ctx.add_reaction(emoji[2])
+                    if emoji[0] == "COOL":
+                        await ctx.add_reaction(emoji[3])
+                        await ctx.add_reaction(emoji[4])
+                        await ctx.add_reaction(emoji[5])
 
     # @commands.Cog.listener()
     # async def on_member_remove(self, ctx):
