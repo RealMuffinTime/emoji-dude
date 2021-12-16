@@ -37,6 +37,46 @@ class Basic(commands.Cog):
     # async def on_member_join(self, role: discord.Role, member: discord.Member = None):
     #     await self.bot.add_role(member, role)
 
+    @commands.Cog.listener()
+    async def on_voice_state_update(self, member, before, after):
+        guild = member.guild
+        empty_channels = []
+        for channel in guild.voice_channels:
+            if channel.name.startswith("voicedev"):
+                if not channel.members:
+                    empty_channels.append(channel)
+
+        if not empty_channels:
+            highest_channel = None
+            for channel in guild.voice_channels:
+                if channel.name.startswith("voicedev"):
+                    pair = channel.name.split(" ")
+                    print(pair)
+                    pair[0] = channel
+                    pair[-1] = int(pair[-1])
+                    print(pair)
+                    if highest_channel is None:
+                        highest_channel = pair
+                    elif pair[-1] > highest_channel[-1]:
+                        highest_channel = pair
+            channel = highest_channel[0]
+            if channel.permissions_for(channel.guild.me).manage_channels:
+                await guild.create_voice_channel(name="voicedev " + str(highest_channel[-1] + 1), category=channel.category)
+        else:
+            lowest_channel = None
+            for channel in empty_channels:
+                pair = channel.name.split(" ")
+                pair[0] = channel
+                pair[-1] = int(pair[-1])
+                if lowest_channel is None:
+                    lowest_channel = pair
+                elif pair[-1] < lowest_channel[-1]:
+                    lowest_channel = pair
+            empty_channels.remove(lowest_channel[0])
+            for channel in empty_channels:
+                if channel.permissions_for(channel.guild.me).manage_channels:
+                    await channel.delete()
+
     @commands.command(name='ping', description='some pongs')
     async def ping_command(self, ctx):
         start = datetime.datetime.now()
