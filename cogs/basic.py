@@ -37,11 +37,11 @@ class Basic(commands.Cog):
 
     @commands.command(name='ping', description='some pongs')
     async def ping_command(self, ctx):
-        start = datetime.timestamp(d.now())
-        msg = await ctx.send(content='**Pinging...**')
+        start = datetime.datetime.now()
+        msg = await ctx.send(content='**Ping?**')
         await msg.edit(content='**Pong!**\nOne Message round-trip took '
-                               '**{}ms**.'.format(int((datetime.timestamp(datetime.now()) - start) * 1000)) +
-                               '\nPing of the bot **{}ms**'.format(int(self.bot.latency * 1000)))
+                               '**{}ms**.'.format(int((datetime.datetime.now() - start).microseconds / 1000)) +
+                               '\nPing of the bot **{}ms**.'.format(int(self.bot.latency * 1000)))
 
     @commands.command(name='screenshare', aliases=['ss'],
                       description='can be used to share your screen in voice channels')
@@ -57,7 +57,7 @@ class Basic(commands.Cog):
                                    "> <https://discordapp.com/channels/" + server_id + "/" + channel_id + "/>\n" +
                                    "Otherwise ignore this message")
         else:
-            await ctx.channel.send("**Screenshare:**\n" +
+            await ctx.channel.send("**Screenshare**\n" +
                                    ":x:You are not in a voice channel! \nYou must be in a voice channel to share your "
                                    "screen")
 
