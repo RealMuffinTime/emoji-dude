@@ -111,7 +111,7 @@ class Basic(commands.Cog):
         text = msg[len(prefix) + len(alias) + 1:]
 
         if text == '':
-            await ctx.send(content='You need to specify the emoji and the number of these!')
+            await ctx.send(content='**Emojis**\nYou need to specify the emoji and the number of these.')
             print("further")
         else:
             parameters = text.split(" ")
@@ -128,8 +128,7 @@ class Basic(commands.Cog):
                             return
                         if index > 27:
                             index = 27
-                            warning = "\nUnfortunately, I only send 27 " + emoji[1] + \
-                                      "s :disappointed_relieved: "
+                            warning = "**Emojis**\nUnfortunately, I only send 27 " + emoji[1] + "s :disappointed_relieved:."
                         for i in range(index):
                             send_text += ":" + emoji[1] + ":"
                         if send_text + warning != "":
