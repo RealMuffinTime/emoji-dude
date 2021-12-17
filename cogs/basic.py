@@ -39,29 +39,34 @@ class Basic(commands.Cog):
 
     @commands.Cog.listener()
     async def on_voice_state_update(self, member, before, after):
+        managed_channels = [[669895353557975080, "test"], [851244114191319080, "Sprachkanal", [678556874957783040, "Channel"]]]
         guild = member.guild
+        keyword = None
+        for managed_guild in managed_channels:
+            if managed_guild[0] == guild.id:
+                keyword = managed_guild[1]
+        if keyword is None:
+            return
         empty_channels = []
         for channel in guild.voice_channels:
-            if channel.name.startswith("voicedev"):
+            if channel.name.startswith(keyword):
                 if not channel.members:
                     empty_channels.append(channel)
 
         if not empty_channels:
             highest_channel = None
             for channel in guild.voice_channels:
-                if channel.name.startswith("voicedev"):
+                if channel.name.startswith(keyword):
                     pair = channel.name.split(" ")
-                    print(pair)
                     pair[0] = channel
                     pair[-1] = int(pair[-1])
-                    print(pair)
                     if highest_channel is None:
                         highest_channel = pair
                     elif pair[-1] > highest_channel[-1]:
                         highest_channel = pair
             channel = highest_channel[0]
             if channel.permissions_for(channel.guild.me).manage_channels:
-                await guild.create_voice_channel(name="voicedev " + str(highest_channel[-1] + 1), category=channel.category)
+                await guild.create_voice_channel(name=keyword + " " + str(highest_channel[-1] + 1), category=channel.category)
         else:
             lowest_channel = None
             for channel in empty_channels:
