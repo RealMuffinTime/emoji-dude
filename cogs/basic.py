@@ -1,5 +1,6 @@
 import datetime
 import discord
+import discord.utils
 from discord.ext import commands
 
 emojis = [["LOL", "lollipop", "🍭"], ["POOP", "poop", "💩"], ["COOL", "cool", "🇨", "🇴", "🅾", "🇱"]]
@@ -45,6 +46,8 @@ class Basic(commands.Cog):
         for managed_guild in managed_channels:
             if managed_guild[0] == guild.id:
                 keyword = managed_guild[1]
+                guild = discord.utils.get(self.bot.guilds, id=managed_guild[0])
+                break
         if keyword is None:
             return
         empty_channels = []
