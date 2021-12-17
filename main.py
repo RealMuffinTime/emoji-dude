@@ -13,7 +13,7 @@ from discord.ext import commands
 # New stuff
 #  - Added a limit in `ed.clear <limit>`, you can now specify the amount of messages to delete
 #  - Adds :billed_cap: on every message of user with id 443404465928667137
-#  - Added a voice channel manager for some specific channel and guilds
+#  - Added a voice channel manager for some specific channels and guilds
 # Changes
 #  - Typo fixing
 #  - Decreased the maximum emoji amount in 'ed.emojis' to 27
