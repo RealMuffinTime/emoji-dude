@@ -39,7 +39,7 @@ class Basic(commands.Cog):
 
     @commands.Cog.listener()
     async def on_voice_state_update(self, member, before, after):
-        managed_channels = [[669895353557975080, "test"], [851244114191319080, "Sprachkanal", [678556874957783040, "Channel"]]]
+        managed_channels = [[669895353557975080, "test"], [851244114191319080, "Sprachkanal"], [678556874957783040, "Channel"]]
         guild = member.guild
         keyword = None
         for managed_guild in managed_channels:
