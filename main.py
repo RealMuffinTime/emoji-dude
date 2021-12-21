@@ -96,15 +96,15 @@ def log(status, message):
     try:
         status_prefix = None
         if status == "error":
-            status_prefix = "%s [  ERROR  ] "
+            status_prefix = "[ %s  ERROR  ] "
         if status == "info":
-            status_prefix = "%s [  INFO   ] "
+            status_prefix = "[ %s  INFO   ] "
         print(status_prefix % get_curr_timestamp() + message)
         log_file = open(r"log/%s_%s.txt" % (secret.secret, get_start_timestamp().replace(" ", "_").replace(":", "-")), "a", encoding="utf8")
         log_file.write(status_prefix % get_curr_timestamp() + message + "\n")
         log_file.close()
     except Exception as e:
-        status_prefix = "%s [  ERROR  ] " % get_curr_timestamp()
+        status_prefix = "[ %s  ERROR  ] " % get_curr_timestamp()
         print(status_prefix + "There is an error in a error reporter, HAHA, how ironic, %s" % str(e))
 
 
