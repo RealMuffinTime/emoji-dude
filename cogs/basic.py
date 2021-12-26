@@ -19,8 +19,6 @@ class Basic(commands.Cog):
         if ctx.content.startswith("ed."):
             return
         if ctx.channel.permissions_for(ctx.guild.me).add_reactions:
-            if author.id == 443404465928667137:
-                await ctx.add_reaction("🧢")
             for emoji in emojis:
                 if emoji[0] in ctx.content.upper():
                     await ctx.add_reaction(emoji[2])
