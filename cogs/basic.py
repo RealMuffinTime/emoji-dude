@@ -51,7 +51,7 @@ class Basic(commands.Cog):
         empty_channels = []
         for channel in guild.voice_channels:
             if channel.name.startswith(keyword):
-                if not channel.members:
+                if len(voice.channel.voice_states.keys()) == 0:
                     empty_channels.append(channel)
 
         if not empty_channels:
