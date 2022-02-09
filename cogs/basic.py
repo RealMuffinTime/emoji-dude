@@ -189,7 +189,6 @@ class Basic(commands.Cog):
 
         if text == '':
             await ctx.send(content='**Emojis**\nYou need to specify the emoji and the number of these.')
-            print("further")
         else:
             parameters = text.split(" ")
             if len(parameters) == 2:
@@ -201,7 +200,7 @@ class Basic(commands.Cog):
                         try:
                             index = int(parameters[1])
                         except Exception:
-                            await emojis_syntax(ctx)
+                            await ctx.send('**Emojis**\nDid not find specified emoji.')
                             return
                         if index > 27:
                             index = 27
@@ -209,7 +208,7 @@ class Basic(commands.Cog):
                         for i in range(index):
                             send_text += ":" + emoji[1] + ":"
                         if send_text + warning != "":
-                            await ctx.channel.send(send_text + warning)
+                            await ctx.send(send_text + warning)
 
 
 def setup(bot):
