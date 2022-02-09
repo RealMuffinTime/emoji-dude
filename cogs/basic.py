@@ -91,8 +91,40 @@ class Basic(commands.Cog):
                                '**{}ms**.'.format(int((datetime.datetime.now() - start).microseconds / 1000)) +
                                '\nPing of the bot **{}ms**.'.format(int(self.bot.latency * 1000)))
 
-    @commands.command(name='screenshare', aliases=['ss'],
-                      description='can be used to share your screen in voice channels')
+    @commands.command(name='backupchannel', aliases=['bc'], description='can be used to backup channel to another one')
+    async def backupchannel_command(self, ctx):
+        if ctx.author.id == 412235309204635649:
+            content = ctx.message.content.split(" ")
+            if len(content) == 3:
+                try:
+                    from_channel = discord.utils.get(ctx.guild.channels, id=int(content[1]))
+                    to_channel = discord.utils.get(ctx.guild.channels, id=int(content[2]))
+                except Exception as e:
+                    await ctx.send("**BackupChannel**\nInvalid channels.")
+                    return
+                status_message = await ctx.send(
+                    f"**BackupChannel**\nBeginning backup from <#{from_channel.id}> to <#{to_channel.id}>.\nSearching for messages...")
+                backup_messages = await from_channel.history(limit=None, oldest_first=True).flatten()
+                await status_message.edit(
+                    content=f"**BackupChannel**\nBeginning backup of <#{from_channel.id}> to <#{to_channel.id}>.\nFound {len(backup_messages)} messages.")
+                allowed_mentions = discord.AllowedMentions(everyone=False, users=False, roles=False, replied_user=False)
+                for message in backup_messages:
+                    timestamp = int(message.created_at.timestamp())
+                    if message.edited_at is not None:
+                        timestamp = int(message.edited_at.timestamp())
+                    try:
+                        await to_channel.send(f"--- At <t:{timestamp}:f> wrote <@!{message.author.id}> ---",
+                                              allowed_mentions=allowed_mentions)
+                        await to_channel.send(message.content, allowed_mentions=allowed_mentions)
+                    except Exception as e:
+                        print(e)
+            else:
+                await ctx.send("**BackupChannel**\nInvalid input.")
+                return
+        else:
+            await ctx.send("**BackupChannel**\nNo permission to use this command.")
+
+    @commands.command(name='screenshare', aliases=['ss'], description='can be used to share your screen in voice channels')
     async def screenshare_command(self, ctx):
         user = ctx.author
         if user.voice:
