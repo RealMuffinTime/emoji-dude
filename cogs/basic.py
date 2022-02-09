@@ -140,23 +140,23 @@ class Basic(commands.Cog):
         else:
             await ctx.send("**Screenshare**\nYou are not in a voice channel!")
 
-    @commands.command(name='clean', aliases=['c'], description='cleans all messages affecting this bot')
+    @commands.command(name='clean', description='cleans all messages affecting this bot')
     async def clean_command(self, ctx):
-        await ctx.send(content='**CleanUp**\nDeleting...')
+        message = await ctx.send(content='**CleanUp**\nDeleting...')
 
-        def is_me(m):
-            return m.author == self.bot.user
+        def check(m):
+            if m == message:
+                return False
+            elif m.content.startswith("ed."):
+                return True
+            elif m.author == self.bot.user:
+                return True
+            else:
+                return False
 
-        deleted_user = 0
-        async for message in ctx.channel.history():
-            if message.content.startswith("ed."):
-                await message.delete()
-                deleted_user += 1
+        deleted = await ctx.channel.purge(check=check)
 
-        deleted_bot = await ctx.channel.purge(check=is_me)
-        message = await ctx.channel.send(
-            '**CleanUp**\nDeleted **{}** message(s)'.format(len(deleted_bot) - 2 + deleted_user))
-        await message.delete(delay=5)
+        await message.edit(content=f'**CleanUp**\nDeleted **{len(deleted) - 1}** message(s)', delete_after=5)
 
     @commands.command(name='clear', description='clears messages')
     async def clear_command(self, ctx):
