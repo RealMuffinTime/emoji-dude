@@ -6,17 +6,14 @@ import secret_dev as secret
 import uuid
 from discord.ext import commands
 
-# TODO
+# TODO Index check, members in channel before bot start
 
-# Version 1.0.2
+# Version 1.0.2 ->
 #
 # New stuff
-#  - Added a limit in `ed.clear <limit>`, you can now specify the amount of messages to delete
-#  - Adds :billed_cap: on every message of user with id 443404465928667137
-#  - Added a voice channel manager for some specific channels and guilds
+#  -
 # Changes
-#  - Typo fixing
-#  - Decreased the maximum emoji amount in 'ed.emojis' to 27
+#  - voice channel manager fix
 
 bot = None
 cogs = None
