@@ -169,10 +169,9 @@ class Basic(commands.Cog):
         message = await ctx.send(content='**ClearUp**\nDeleting...')
 
         def is_clear_message(m):
-            if m.id != message.id:
-                return True
-            else:
+            if m == message:
                 return False
+            return False
 
         deleted = await ctx.channel.purge(limit=limit + 2, check=is_clear_message, bulk=True)
 
