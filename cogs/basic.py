@@ -87,9 +87,9 @@ class Basic(commands.Cog):
     async def ping_command(self, ctx):
         start = datetime.datetime.now()
         msg = await ctx.send(content='**Ping?**')
-        await msg.edit(content='**Pong!**\nOne Message round-trip took '
-                               '**{}ms**.'.format(int((datetime.datetime.now() - start).microseconds / 1000)) +
-                               '\nPing of the bot **{}ms**.'.format(int(self.bot.latency * 1000)))
+        await msg.edit(content=f'**Pong!**\n'
+                               f'One Message round-trip took **{int((datetime.datetime.now() - start).microseconds / 1000)}ms**.\n'
+                               f'Ping of the bot **{int(self.bot.latency * 1000)}ms**.')
 
     @commands.command(name='backupchannel', aliases=['bc'], description='can be used to backup channel to another one')
     async def backupchannel_command(self, ctx):
@@ -131,15 +131,14 @@ class Basic(commands.Cog):
             server_id = str(int(ctx.guild.id))
             channel_id = str(int(user.voice.channel.id))
             channel = str(user.voice.channel.name)
-            await ctx.channel.send("**Screenshare**\n" +
-                                   "If you want to share your screen in " + channel +
-                                   ", use this link\n"
-                                   "> <https://discordapp.com/channels/" + server_id + "/" + channel_id + "/>\n" +
-                                   "Otherwise ignore this message")
+            await ctx.send("**Screenshare**\n"
+                           f"If you want to share your screen in {channel}"
+                           ", use this link\n"
+                           f"> <https://discordapp.com/channels/{server_id}/{channel_id}/>\n"
+                           "Otherwise ignore this message")
+            return
         else:
-            await ctx.channel.send("**Screenshare**\n" +
-                                   ":x:You are not in a voice channel! \nYou must be in a voice channel to share your "
-                                   "screen")
+            await ctx.send("**Screenshare**\nYou are not in a voice channel!")
 
     @commands.command(name='clean', aliases=['c'], description='cleans all messages affecting this bot')
     async def clean_command(self, ctx):
@@ -177,8 +176,7 @@ class Basic(commands.Cog):
 
         deleted = await ctx.channel.purge(limit=limit + 2, check=is_clear_message, bulk=True)
 
-        await message.edit(content='**ClearUp**\nDeleted **{}** message(s)'.format(len(deleted) - 1))
-        await message.delete(delay=5)
+        await message.edit(content=f'**ClearUp**\nDeleted **{len(deleted) - 1}** message(s)', delete_after=5)
 
     @commands.command(name='emojis', aliases=['e'], description='sends much emojis, cip cap 27')
     async def emojis_command(self, ctx):
@@ -208,7 +206,7 @@ class Basic(commands.Cog):
                             return
                         if index > 27:
                             index = 27
-                            warning = "**Emojis**\nUnfortunately, I only send 27 " + emoji[1] + "s :disappointed_relieved:."
+                            warning = f"**Emojis**\nUnfortunately, I only send 27 {emoji[1]}s :disappointed_relieved:."
                         for i in range(index):
                             send_text += ":" + emoji[1] + ":"
                         if send_text + warning != "":
