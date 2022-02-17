@@ -6,4 +6,4 @@ database_port = 3306
 database_user = ''
 database_pass = ''
 database_name = ''
-managed_channels = [[669895353557975080, "test"], [851244114191319080, "Sprachkanal"], [678556874957783040, "Channel"]]
+managed_channels = [[669895353557975080, "test"], [851244114191319080, "┊Sprachkanal"], [678556874957783040, "Channel"]]
