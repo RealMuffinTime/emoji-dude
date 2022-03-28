@@ -1,4 +1,5 @@
 import asyncio
+import datetime
 import discord
 import utils
 from discord.ext import commands
@@ -52,9 +53,24 @@ def get_version():
     return version
 
 
+async def check_afk():
+    afk_members = await utils.execute_sql(f"SELECT user_id, last_seen FROM set_users WHERE last_seen IS NOT NULL", True)
+    for afk_member in afk_members:
+        if utils.get_curr_timestamp(True) - afk_member[1] >= datetime.timedelta(seconds=5):
+            guild = get_bot().get_guild(669895353557975080)
+            member = await guild.fetch_member(afk_member[0])
+            if member.voice is not None:
+                last_channel = member.voice.channel
+                await utils.execute_sql(f"INSERT INTO set_users VALUES ('{member.id}', 0, NULL, '{last_channel.id}')  ON DUPLICATE KEY UPDATE last_seen = NULL, last_channel = '{last_channel.id}'", False)
+                await member.move_to(guild.afk_channel)
+            else:
+                await utils.execute_sql(f"INSERT INTO set_users VALUES ('{member.id}', 0, NULL, NULL)  ON DUPLICATE KEY UPDATE last_seen = NULL", False)
+
+
 async def cron():
     while True:
-        await asyncio.sleep(10)
+        await check_afk()
+        await asyncio.sleep(30)
 
 
 async def update_guild_count():

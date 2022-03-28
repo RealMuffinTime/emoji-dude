@@ -42,9 +42,9 @@ class Events(commands.Cog):
                 await utils.execute_sql(f"INSERT INTO set_users VALUES ('{member.id}', 0, '{utils.get_curr_timestamp()}', NULL)  ON DUPLICATE KEY UPDATE last_seen = '{utils.get_curr_timestamp()}'", False)
         if after.self_mute is False:
             if after.channel is guild.afk_channel:
-                last_channel = await utils.execute_sql(f"SELECT last_channel FROM set_users WHERE user_id ='{str(guild.id)}'", True)
+                last_channel = await utils.execute_sql(f"SELECT last_channel FROM set_users WHERE user_id ='{str(member.id)}'", True)
                 if last_channel:
-                    await member.move_to(int(last_channel[0][0]))
+                    await member.move_to(guild.get_channel(last_channel[0][0]))
                     await utils.execute_sql(f"INSERT INTO set_users VALUES ('{member.id}', 0, NULL, NULL)  ON DUPLICATE KEY UPDATE last_seen = NULL", False)
         keyword = None
         keyword = (await utils.execute_sql(f"SELECT auto_channel FROM set_guilds WHERE guild_id ='{str(guild.id)}'", True))[0][0]
