@@ -1,9 +1,5 @@
-import datetime
-import discord
-import discord.utils
 from discord.ext import commands
 import utils
-import secret_dev as secret
 
 emojis = [["LOL", "lollipop", "🍭"], ["POOP", "poop", "💩"], ["COOL", "cool", "🇨", "🇴", "🅾", "🇱"]]
 
