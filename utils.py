@@ -14,8 +14,11 @@ def get_start_timestamp():
     return start_timestamp
 
 
-def get_curr_timestamp():
-    return str(datetime.datetime.now().replace(microsecond=0))
+def get_curr_timestamp(raw=False):
+    if raw:
+        return datetime.datetime.now()
+    else:
+        return str(datetime.datetime.now().replace(microsecond=0))
 
 
 def on_error(error_type, message):
@@ -67,9 +70,9 @@ async def execute_sql(sql_term, fetch):
             cursor.execute("INSERT INTO stat_bot_online (action) VALUES ('last seen');")
 
         if temp_fetch:
-            if temp_fetch[0][1] == 'last seen' and (datetime.datetime.now() - temp_fetch[0][2]).seconds < 60:
+            if temp_fetch[0][1] == 'last seen' and (get_curr_timestamp(True) - temp_fetch[0][2]).seconds < 60:
                 cursor.execute(
-                    f"UPDATE stat_bot_online SET timestamp = '{datetime.datetime.now()}' WHERE id = '{temp_fetch[0][0]}';")
+                    f"UPDATE stat_bot_online SET timestamp = '{get_curr_timestamp()}' WHERE id = '{temp_fetch[0][0]}';")
             else:
                 restart()
         else:
