@@ -6,4 +6,3 @@ database_port = 3306
 database_user = ''
 database_pass = ''
 database_name = ''
-managed_channels = [[669895353557975080, "voicedev"]]
