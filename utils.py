@@ -61,12 +61,20 @@ async def execute_sql(sql_term, fetch):
         cursor.execute(f"USE `{secret.database_name}`")
         cursor.execute("SELECT * FROM stat_bot_online ORDER BY id DESC LIMIT 1")
         temp_fetch = cursor.fetchall()
+
+        def restart():
+            cursor.execute("INSERT INTO stat_bot_online (action) VALUES ('startup');")
+            cursor.execute("INSERT INTO stat_bot_online (action) VALUES ('last seen');")
+
         if temp_fetch:
             if temp_fetch[0][1] == 'last seen' and (datetime.datetime.now() - temp_fetch[0][2]).seconds < 60:
-                cursor.execute(f"UPDATE stat_bot_online SET timestamp = '{datetime.datetime.now()}' WHERE id = '{temp_fetch[0][0]}';")
+                cursor.execute(
+                    f"UPDATE stat_bot_online SET timestamp = '{datetime.datetime.now()}' WHERE id = '{temp_fetch[0][0]}';")
             else:
-                cursor.execute("INSERT INTO stat_bot_online (action) VALUES ('startup');")
-                cursor.execute("INSERT INTO stat_bot_online (action) VALUES ('last seen');")
+                restart()
+        else:
+            restart()
+
         cursor.execute(sql_term)
         get_db_connection().commit()
         if cursor.rowcount > 0 and fetch is True:
