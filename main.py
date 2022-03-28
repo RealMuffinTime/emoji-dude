@@ -1,7 +1,5 @@
 import asyncio
-import datetime
 import discord
-import secret_dev as secret
 import utils
 from discord.ext import commands
 
@@ -99,6 +97,6 @@ async def on_ready():
 
 
 try:
-    get_bot().run(secret.bot_token, bot=True, reconnect=False)
+    get_bot().run(utils.secret.bot_token, bot=True, reconnect=False)
 except Exception as e:
     utils.on_error("run()", str(e))
