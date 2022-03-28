@@ -1,9 +1,8 @@
 import asyncio
 import datetime
 import discord
-import mariadb
 import secret_dev as secret
-import uuid
+import utils
 from discord.ext import commands
 
 # TODO Index check, members in channel before bot start
@@ -37,7 +36,7 @@ def get_bot():
 def get_cogs():
     global cogs
     if cogs is None:
-        cogs = ['cogs.basic']  # , 'cogs.embed']
+        cogs = ['cogs.commands', 'cogs.events']
     return cogs
 
 
@@ -48,17 +47,6 @@ def get_prefix():
     return prefix
 
 
-def get_start_timestamp():
-    global start_timestamp
-    if start_timestamp is None:
-        start_timestamp = str(datetime.datetime.now().replace(microsecond=0))
-    return start_timestamp
-
-
-def get_curr_timestamp():
-    return str(datetime.datetime.now().replace(microsecond=0))
-
-
 def get_version():
     global version
     if version is None:
@@ -66,11 +54,34 @@ def get_version():
     return version
 
 
+async def cron():
+    while True:
+        await asyncio.sleep(10)
+
+
+async def update_guild_count():
+    try:
+        guild_count = len(get_bot().guilds)
+        guild_count_db = len(await utils.execute_sql("SELECT * FROM stat_bot_guilds WHERE action = 'add';", True)) - len(
+            await utils.execute_sql("SELECT * FROM stat_bot_guilds WHERE action = 'remove';", True))
+        if guild_count < guild_count_db:
+            diff = guild_count_db - guild_count
+            for count in range(diff):
+                await utils.execute_sql("INSERT INTO stat_bot_guilds (action) VALUES ('remove');", False)
+        elif guild_count > guild_count_db:
+            diff = guild_count - guild_count_db
+            for count in range(diff):
+                await utils.execute_sql("INSERT INTO stat_bot_guilds (action) VALUES ('add');", False)
+
+    except Exception as e:
+        utils.on_error("update_guild_count()", str(e).strip('.'))
+
+
 @get_bot().event
 async def on_ready():
-    log("info", "Logged in as %s." % str(get_bot().user))
+    utils.log("info", "Logged in as %s." % str(get_bot().user))
     for guild in get_bot().guilds:
-        log("info", " - %s (%s)" % (guild.name, guild.id))
+        utils.log("info", " - %s (%s)" % (guild.name, guild.id))
     get_bot().remove_command('help')
     await get_bot().change_presence(
         activity=discord.Streaming(
@@ -81,31 +92,13 @@ async def on_ready():
     for cog in get_cogs():
         if get_bot().get_cog(type(cog).__name__) is None:
             get_bot().load_extension(cog)
-
-
-def on_error(error_type, message):
-    error_uuid = str(uuid.uuid4())
-    log("error", error_type + " error uuid: " + error_uuid + ", " + message)
-    return error_uuid
-
-
-def log(status, message):
-    try:
-        status_prefix = None
-        if status == "error":
-            status_prefix = "[%s ERROR] "
-        if status == "info":
-            status_prefix = "[%s INFO ] "
-        print(status_prefix % get_curr_timestamp() + message)
-        log_file = open(r"log/%s_%s.txt" % (secret.secret, get_start_timestamp().replace(" ", "_").replace(":", "-")), "a", encoding="utf8")
-        log_file.write(status_prefix % get_curr_timestamp() + message + "\n")
-        log_file.close()
-    except Exception as e:
-        status_prefix = "[%s ERROR] " % get_curr_timestamp()
-        print(status_prefix + "There is an error in a error reporter, HAHA, how ironic, %s" % str(e))
+    for guild in get_bot().guilds:
+        await utils.execute_sql(f"INSERT IGNORE INTO set_guilds VALUES ('{guild.id}', NULL)", False)
+    await update_guild_count()
+    await cron()
 
 
 try:
     get_bot().run(secret.bot_token, bot=True, reconnect=False)
 except Exception as e:
-    on_error("run()", str(e))
+    utils.on_error("run()", str(e))

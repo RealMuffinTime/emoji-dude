@@ -1,87 +1,110 @@
-import datetime
-import discord
-import discord.utils
 from discord.ext import commands
-import secret_dev as secret
+import discord
+import datetime
+import utils
 
 emojis = [["LOL", "lollipop", "🍭"], ["POOP", "poop", "💩"], ["COOL", "cool", "🇨", "🇴", "🅾", "🇱"]]
 
 
-class Basic(commands.Cog):
+class Commands(commands.Cog):
 
     def __init__(self, bot):
         self.bot = bot
 
-    @commands.Cog.listener()
-    async def on_message(self, ctx):
-        author = ctx.author
-        if author.bot:
-            return
-        if ctx.content.startswith("ed."):
-            return
-        if ctx.channel.permissions_for(ctx.guild.me).add_reactions:
-            for emoji in emojis:
-                if emoji[0] in ctx.content.upper():
-                    await ctx.add_reaction(emoji[2])
-                    if emoji[0] == "COOL":
-                        await ctx.add_reaction(emoji[3])
-                        await ctx.add_reaction(emoji[4])
-                        await ctx.add_reaction(emoji[5])
+    @commands.command(name='help', description='The help command!', aliases=['commands', 'command', 'start'], usage='cog')
+    async def help_command(self, ctx, cog='all'):
 
-    # @commands.Cog.listener()
-    # async def on_member_remove(self, ctx):
-    #     channel = self.bot.get_channel(646043498717380610)
-    #     await channel.send("\nsomeone let us alone...\n{}".format())
-    #
-    # @commands.Cog.listener()
-    # async def on_member_join(self, role: discord.Role, member: discord.Member = None):
-    #     await self.bot.add_role(member, role)
+        # The third parameter comes into play when
+        # only one word argument has to be passed by the user
 
-    @commands.Cog.listener()
-    async def on_voice_state_update(self, member, before, after):
-        guild = member.guild
-        keyword = None
-        for managed_guild in secret.managed_channels:
-            if managed_guild[0] == guild.id:
-                keyword = managed_guild[1]
-                guild = discord.utils.get(self.bot.guilds, id=managed_guild[0])
-                break
-        if keyword is None:
-            return
-        empty_channels = []
-        for channel in guild.voice_channels:
-            if channel.name.startswith(keyword):
-                if len(channel.voice_states.keys()) == 0:
-                    empty_channels.append(channel)
-
-        if not empty_channels:
-            highest_channel = None
-            for channel in guild.voice_channels:
-                if channel.name.startswith(keyword):
-                    pair = channel.name.split(" ")
-                    pair[0] = channel
-                    pair[-1] = int(pair[-1])
-                    if highest_channel is None:
-                        highest_channel = pair
-                    elif pair[-1] > highest_channel[-1]:
-                        highest_channel = pair
-            channel = highest_channel[0]
-            if channel.permissions_for(channel.guild.me).manage_channels:
-                await guild.create_voice_channel(name=keyword + " " + str(highest_channel[-1] + 1), category=channel.category)
+        # Prepare the embed
+        if str(ctx.channel.type) == "private":
+            color = discord.Colour.random()
         else:
-            lowest_channel = None
-            for channel in empty_channels:
-                pair = channel.name.split(" ")
-                pair[0] = channel
-                pair[-1] = int(pair[-1])
-                if lowest_channel is None:
-                    lowest_channel = pair
-                elif pair[-1] < lowest_channel[-1]:
-                    lowest_channel = pair
-            empty_channels.remove(lowest_channel[0])
-            for channel in empty_channels:
-                if channel.permissions_for(channel.guild.me).manage_channels:
-                    await channel.delete()
+            if ctx.channel.permissions_for(ctx.author.guild.me).embed_links is False:
+                await ctx.send(channel=ctx.channel, author=ctx.author,
+                               message="Can't answer:\nI don't have permission to embed links.", delete=10)
+                return
+            color = ctx.channel.guild.me.color.value
+
+        help_embed = discord.Embed(
+            title=f'Help page of {self.bot.user}',
+            color=color
+        )
+        help_embed.set_footer(
+            text=f'Requested by {ctx.message.author.name}',
+            icon_url=ctx.message.author.avatar_url
+        )
+
+        # Get a list of all cogs
+        cogs = [c for c in self.bot.cogs.keys()]
+
+        # If cog is not specified by the user, we list all cogs and commands
+
+        if cog == 'all':
+            for cog in cogs:
+                # Get a list of all commands under each cog
+
+                cog_commands = self.bot.get_cog(cog).get_commands()
+                commands_list = ''
+                for comm in cog_commands:
+                    commands_list += f'**{comm.name}** - *{comm.description}*\n'
+
+                # Add the cog's details to the embed.
+
+                help_embed.add_field(
+                    name=cog,
+                    value=commands_list,
+                    inline=False
+                ).add_field(
+                    name='\u200b', value='\u200b', inline=False
+                )
+
+                # Also added a blank field '\u200b' is a whitespace character.
+            pass
+        else:
+
+            # If the cog was specified
+
+            lower_cogs = [c.lower() for c in cogs]
+
+            # If the cog actually exists.
+            if cog.lower() in lower_cogs:
+
+                # Get a list of all commands in the specified cog
+                commands_list = self.bot.get_cog(cogs[lower_cogs.index(cog.lower())]).get_commands()
+                help_text = ''
+
+                # Add details of each command to the help text
+                # Command Name
+                # Description
+                # [Aliases]
+                #
+                # Format
+                for command in commands_list:
+                    help_text += f'**{command.name}**\n Description: {command.description}\n'
+
+                    # Also add aliases, if there are any
+                    if len(command.aliases) > 0:
+                        help_text += f"Aliases: `{', '.join(command.aliases)}`\n"
+
+                    # Finally the format
+                    help_text += f'Format: `@{self.bot.user.name}#{self.bot.user.discriminator}' \
+                                 f' {command.name} {command.usage if command.usage is not None else ""}`\n\n'
+
+                help_embed.description = help_text
+            else:
+                # Notify the user of invalid cog and finish the command
+                await ctx.send('Invalid cog specified.\nUse `help` command to list all cogs.')
+                return
+
+        await ctx.send(embed=help_embed)
+
+        return
+
+    @commands.command(name='settings', description='Not implemented yet.',)
+    async def settings_command(self, ctx):
+        await ctx.send(content="Can't answer:\nNot implemented yet.")
 
     @commands.command(name='ping', description='some pongs')
     async def ping_command(self, ctx):
@@ -212,4 +235,4 @@ class Basic(commands.Cog):
 
 
 def setup(bot):
-    bot.add_cog(Basic(bot))
+    bot.add_cog(Commands(bot))
