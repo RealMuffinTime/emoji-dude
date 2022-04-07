@@ -1,4 +1,4 @@
-# emoji-dude
+# emoji dude
 
 - A tiny emoji writing Discord Bot in Phyton.
 
