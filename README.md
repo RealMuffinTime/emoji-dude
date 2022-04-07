@@ -6,7 +6,7 @@
 
 - If you have questions, feel free to ask us by leaving a comment.
 
-- Further information about the bot are available in our [Wiki](https://github.com/realmuffintime/emoji-dude/wiki).
+- Further information about the bot are available in our [WIKI.md](https://github.com/RealMuffinTime/emoji-dude/blob/master/WIKI.md).
 
 
 
