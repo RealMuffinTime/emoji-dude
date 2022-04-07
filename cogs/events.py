@@ -40,17 +40,20 @@ class Events(commands.Cog):
         if before.self_deaf is False:
             if after.self_deaf is True:
                 if after.channel is not guild.afk_channel:
-                    await utils.execute_sql(f"INSERT INTO set_users VALUES ('{member.id}', 0, '{utils.get_curr_timestamp()}', NULL, NULL)  ON DUPLICATE KEY UPDATE last_seen = '{utils.get_curr_timestamp()}', last_channel = '{after.channel.id}', last_guild = '{after.guild.id}'", False)
-        if before.self_deaf is True:
+                    await utils.execute_sql(f"INSERT INTO set_users VALUES ('{member.id}', 0, '{utils.get_curr_timestamp()}', NULL, NULL)  ON DUPLICATE KEY UPDATE last_seen = '{utils.get_curr_timestamp()}', last_channel = '{after.channel.id}', last_guild = '{member.guild.id}'", False)
+        elif before.self_deaf is True:
             if after.self_deaf is False:
                 if after.channel is guild.afk_channel:
                     last_channel = await utils.execute_sql(f"SELECT last_channel FROM set_users WHERE user_id ='{str(member.id)}'", True)
-                    if last_channel:
+                    last_channel = guild.get_channel(last_channel[0][0])
+                    if last_channel is not None:
                         try:
-                            await member.move_to(guild.get_channel(last_channel[0][0]))
+                            await member.move_to(last_channel)
                             await utils.execute_sql(f"INSERT INTO set_users VALUES ('{member.id}', 0, NULL, NULL, NULL)  ON DUPLICATE KEY UPDATE last_seen = NULL, last_channel = NULL, last_guild = NULL", False)
+                            return
                         except Exception as e:
                             utils.log("error", e)
+
         keyword = None
         keyword = (await utils.execute_sql(f"SELECT auto_channel FROM set_guilds WHERE guild_id ='{str(guild.id)}'", True))[0][0]
         if keyword:
