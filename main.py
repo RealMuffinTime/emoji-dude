@@ -6,18 +6,12 @@ from discord.ext import commands
 
 # TODO Index check, members in channel before bot start
 
-# Version 1.0.2 -> 1.1.0
+# Version 1.1.0 ->
 #
 # New stuff
-#  - added afk management
-#  - added database support
-#  - added initial help command
-#  - added placeholder for settings command
-#  - added initial backup command
+#  -
 # Changes
-#  - voice channel manager fix
-#  - rework of cogs
-#  - overall improvements
+#  -
 
 bot = None
 cogs = None
