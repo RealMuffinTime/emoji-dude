@@ -22,6 +22,7 @@ CREATE TABLE IF NOT EXISTS `set_users` (
   `delete_commands` tinyint(1) NOT NULL DEFAULT 0,
   `last_seen` datetime DEFAULT NULL,
   `last_channel` bigint(18) DEFAULT NULL,
+  `last_guild` bigint(18) DEFAULT NULL,
   PRIMARY KEY (`user_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
