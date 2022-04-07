@@ -40,7 +40,7 @@ class Events(commands.Cog):
         if before.self_deaf is False:
             if after.self_deaf is True:
                 if after.channel is not guild.afk_channel:
-                    await utils.execute_sql(f"INSERT INTO set_users VALUES ('{member.id}', 0, '{utils.get_curr_timestamp()}', NULL, NULL)  ON DUPLICATE KEY UPDATE last_seen = '{utils.get_curr_timestamp()}'", False)
+                    await utils.execute_sql(f"INSERT INTO set_users VALUES ('{member.id}', 0, '{utils.get_curr_timestamp()}', NULL, NULL)  ON DUPLICATE KEY UPDATE last_seen = '{utils.get_curr_timestamp()}', last_channel = '{after.channel.id}', last_guild = '{after.guild.id}'", False)
         if before.self_deaf is True:
             if after.self_deaf is False:
                 if after.channel is guild.afk_channel:
@@ -48,7 +48,7 @@ class Events(commands.Cog):
                     if last_channel:
                         try:
                             await member.move_to(guild.get_channel(last_channel[0][0]))
-                            await utils.execute_sql(f"INSERT INTO set_users VALUES ('{member.id}', 0, NULL, NULL, NULL)  ON DUPLICATE KEY UPDATE last_seen = NULL", False)
+                            await utils.execute_sql(f"INSERT INTO set_users VALUES ('{member.id}', 0, NULL, NULL, NULL)  ON DUPLICATE KEY UPDATE last_seen = NULL, last_channel = NULL, last_guild = NULL", False)
                         except Exception as e:
                             utils.log("error", e)
         keyword = None
