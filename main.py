@@ -9,7 +9,7 @@ from discord.ext import commands
 # Version 1.1.0 ->
 #
 # New stuff
-#  -
+#  - user gets not afk marked when stream or video active
 # Changes
 #  -
 
@@ -49,7 +49,7 @@ def get_prefix():
 def get_version():
     global version
     if version is None:
-        version = "1.0.2"
+        version = "1.1.0"
     return version
 
 
