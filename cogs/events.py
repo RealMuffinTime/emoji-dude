@@ -40,8 +40,7 @@ class Events(commands.Cog):
         if before.self_deaf is False:
             if after.self_deaf is True:
                 if after.channel is not guild.afk_channel:
-                    if not after.self_stream or not after.self_video:
-                        await utils.execute_sql(f"INSERT INTO set_users VALUES ('{member.id}', 0, '{utils.get_curr_timestamp()}', NULL, NULL)  ON DUPLICATE KEY UPDATE last_seen = '{utils.get_curr_timestamp()}', last_channel = '{after.channel.id}', last_guild = '{member.guild.id}'", False)
+                    await utils.execute_sql(f"INSERT INTO set_users VALUES ('{member.id}', 0, '{utils.get_curr_timestamp()}', NULL, NULL)  ON DUPLICATE KEY UPDATE last_seen = '{utils.get_curr_timestamp()}', last_channel = '{after.channel.id}', last_guild = '{member.guild.id}'", False)
         elif before.self_deaf is True:
             if after.self_deaf is False:
                 if after.channel is guild.afk_channel:

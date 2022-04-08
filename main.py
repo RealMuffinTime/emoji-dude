@@ -64,15 +64,16 @@ async def check_afk():
                     await utils.execute_sql(f"INSERT INTO set_users VALUES ('{member.id}', 0, NULL, NULL, NULL)  ON DUPLICATE KEY UPDATE last_seen = NULL, last_channel = NULL, last_guild = NULL", False)
                 else:
                     if member.voice.self_deaf is True:
-                        last_channel = member.voice.channel
-                        await utils.execute_sql(
-                            f"INSERT INTO set_users VALUES ('{member.id}', 0, NULL, '{last_channel.id}', '{last_guild.id}')  ON DUPLICATE KEY UPDATE last_seen = NULL, last_channel = '{last_channel.id}', last_guild = '{last_guild.id}'",
-                            False)
-                        await member.move_to(last_guild.afk_channel)
-                    else:
-                        await utils.execute_sql(
-                            f"INSERT INTO set_users VALUES ('{member.id}', 0, NULL, NULL, NULL)  ON DUPLICATE KEY UPDATE last_seen = NULL, last_channel = NULL, last_guild = NULL",
-                            False)
+                        if not member.voice.self_stream or not member.voice.self_video:
+                            last_channel = member.voice.channel
+                            await utils.execute_sql(
+                                f"INSERT INTO set_users VALUES ('{member.id}', 0, NULL, '{last_channel.id}', '{last_guild.id}')  ON DUPLICATE KEY UPDATE last_seen = NULL, last_channel = '{last_channel.id}', last_guild = '{last_guild.id}'",
+                                False)
+                            await member.move_to(last_guild.afk_channel)
+                        else:
+                            await utils.execute_sql(
+                                f"INSERT INTO set_users VALUES ('{member.id}', 0, NULL, NULL, NULL)  ON DUPLICATE KEY UPDATE last_seen = NULL, last_channel = NULL, last_guild = NULL",
+                                False)
 
 
 async def cron():
