@@ -71,7 +71,10 @@ async def check_afk():
                                 f"INSERT INTO set_users VALUES ('{member.id}', 0, '{datetime.datetime.min}', '{last_channel.id}', '{last_guild.id}') "
                                 f"ON DUPLICATE KEY UPDATE last_seen = '{datetime.datetime.min}', last_channel = '{last_channel.id}', last_guild = '{last_guild.id}'",
                                 False)
-                            await member.move_to(last_guild.afk_channel)
+                            try:
+                                await member.move_to(last_guild.afk_channel)
+                            except Exception as e:
+                                utils.on_error("check_afk()", str(e))
                         else:
                             await utils.execute_sql(
                                 f"INSERT INTO set_users VALUES ('{member.id}', 0, NULL, NULL, NULL) "

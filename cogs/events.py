@@ -66,7 +66,7 @@ class Events(commands.Cog):
                             await utils.execute_sql(f"INSERT INTO set_users VALUES ('{member.id}', 0, NULL, NULL, NULL)  ON DUPLICATE KEY UPDATE last_seen = NULL, last_channel = NULL, last_guild = NULL", False)
                             return
                         except Exception as e:
-                            utils.log("error", e)
+                            utils.on_error("on_voice_state_update()", str(e))
                 else:
                     await utils.execute_sql(
                         f"INSERT INTO set_users VALUES ('{member.id}', 0, NULL, NULL, NULL)  ON DUPLICATE KEY UPDATE last_seen = NULL, last_channel = NULL, last_guild = NULL",
