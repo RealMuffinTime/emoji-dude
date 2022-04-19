@@ -2,7 +2,7 @@ from discord.ext import commands
 import discord
 import datetime
 
-emojis = [["LOL", "lollipop", "🍭"], ["POOP", "poop", "💩"], ["COOL", "cool", "🇨", "🇴", "🅾", "🇱"]]
+emojis = [["LOL", "lollipop", ["🍭"]], ["POOP", "poop", ["💩"]], ["COOL", "cool", ["🇨", "🇴", "🅾", "🇱"]]]
 
 
 class Commands(commands.Cog):

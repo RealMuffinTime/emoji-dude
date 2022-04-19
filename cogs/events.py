@@ -3,7 +3,7 @@ import datetime
 from discord.ext import commands
 import utils
 
-emojis = [["LOL", "lollipop", "🍭"], ["POOP", "poop", "💩"], ["COOL", "cool", "🇨", "🇴", "🅾", "🇱"]]
+emojis = [["LOL", "lollipop", ["🍭"]], ["POOP", "poop", ["💩"]], ["COOL", "cool", ["🇨", "🇴", "🅾", "🇱"]]]
 
 
 class Events(commands.Cog):
@@ -21,11 +21,8 @@ class Events(commands.Cog):
         if ctx.channel.permissions_for(ctx.guild.me).add_reactions:
             for emoji in emojis:
                 if emoji[0] in ctx.content.upper():
-                    await ctx.add_reaction(emoji[2])
-                    if emoji[0] == "COOL":
-                        await ctx.add_reaction(emoji[3])
-                        await ctx.add_reaction(emoji[4])
-                        await ctx.add_reaction(emoji[5])
+                    for reaction in emoji[2]:
+                        await ctx.add_reaction(reaction)
 
     # @commands.Cog.listener()
     # async def on_member_remove(self, ctx):
