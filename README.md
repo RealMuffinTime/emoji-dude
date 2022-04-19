@@ -8,8 +8,4 @@
 
 - Further information about the bot are available in our [WIKI.md](https://github.com/RealMuffinTime/emoji-dude/blob/master/WIKI.md).
 
-
-
-*Created in JetBrains PyCharm Community Edition*
-
 *© 2020 - 2022*
