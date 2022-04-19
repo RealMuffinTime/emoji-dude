@@ -56,7 +56,7 @@ def get_version():
 async def check_afk():
     afk_members = await utils.execute_sql(f"SELECT user_id, last_seen, last_guild FROM set_users WHERE last_seen IS NOT NULL", True)
     for afk_member in afk_members:
-        if afk_member[1] != datetime.datetime.min and utils.get_curr_timestamp(True) - afk_member[1] >= datetime.timedelta(seconds=0):
+        if afk_member[1] != datetime.datetime.min and utils.get_curr_timestamp(True) - afk_member[1] >= datetime.timedelta(seconds=120):
             last_guild = get_bot().get_guild(afk_member[2])
             if last_guild is not None:
                 member = await last_guild.fetch_member(afk_member[0])
