@@ -62,18 +62,21 @@ async def check_afk():
                 if last_guild is not None:
                     member = await last_guild.fetch_member(afk_member[0])
                     if member.voice is None:
-                        await utils.execute_sql(f"INSERT INTO set_users VALUES ('{member.id}', 0, NULL, NULL, NULL)  ON DUPLICATE KEY UPDATE last_seen = NULL, last_channel = NULL, last_guild = NULL", False)
+                        await utils.execute_sql(f"INSERT INTO set_users VALUES ('{member.id}', 0, NULL, NULL, NULL) "
+                                                f"ON DUPLICATE KEY UPDATE last_seen = NULL, last_channel = NULL, last_guild = NULL", False)
                     else:
                         if member.voice.self_deaf is True:
                             if not member.voice.self_stream or not member.voice.self_video:
                                 last_channel = member.voice.channel
                                 await utils.execute_sql(
-                                    f"INSERT INTO set_users VALUES ('{member.id}', 0, '{datetime.datetime.min}', '{last_channel.id}', '{last_guild.id}')  ON DUPLICATE KEY UPDATE last_seen = '{datetime.datetime.min}', last_channel = '{last_channel.id}', last_guild = '{last_guild.id}'",
+                                    f"INSERT INTO set_users VALUES ('{member.id}', 0, '{datetime.datetime.min}', '{last_channel.id}', '{last_guild.id}') "
+                                    f"ON DUPLICATE KEY UPDATE last_seen = '{datetime.datetime.min}', last_channel = '{last_channel.id}', last_guild = '{last_guild.id}'",
                                     False)
                                 await member.move_to(last_guild.afk_channel)
                             else:
                                 await utils.execute_sql(
-                                    f"INSERT INTO set_users VALUES ('{member.id}', 0, NULL, NULL, NULL)  ON DUPLICATE KEY UPDATE last_seen = NULL, last_channel = NULL, last_guild = NULL",
+                                    f"INSERT INTO set_users VALUES ('{member.id}', 0, NULL, NULL, NULL) "
+                                    f"ON DUPLICATE KEY UPDATE last_seen = NULL, last_channel = NULL, last_guild = NULL",
                                     False)
 
 
