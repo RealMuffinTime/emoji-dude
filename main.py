@@ -68,12 +68,12 @@ async def check_afk():
                     if member.voice.self_deaf is True:
                         if not member.voice.self_stream or not member.voice.self_video:
                             last_channel = member.voice.channel
-                            await utils.execute_sql(
-                                f"INSERT INTO set_users VALUES ('{member.id}', 0, '{datetime.datetime.min}', '{last_channel.id}', '{last_guild.id}') "
-                                f"ON DUPLICATE KEY UPDATE last_seen = '{datetime.datetime.min}', last_channel = '{last_channel.id}', last_guild = '{last_guild.id}'",
-                                False)
                             try:
                                 await member.move_to(last_guild.afk_channel)
+                                await utils.execute_sql(
+                                    f"INSERT INTO set_users VALUES ('{member.id}', 0, '{datetime.datetime.min}', '{last_channel.id}', '{last_guild.id}') "
+                                    f"ON DUPLICATE KEY UPDATE last_seen = '{datetime.datetime.min}', last_channel = '{last_channel.id}', last_guild = '{last_guild.id}'",
+                                    False)
                             except Exception as e:
                                 utils.on_error("check_afk()", str(e))
                         else:
