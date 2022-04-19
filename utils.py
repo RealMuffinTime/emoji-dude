@@ -1,6 +1,6 @@
 import datetime
 import mariadb
-import uuid
+import shortuuid
 import secret_dev as secret
 
 start_timestamp = None
@@ -22,25 +22,27 @@ def get_curr_timestamp(raw=False):
 
 
 def on_error(error_type, message):
-    error_uuid = str(uuid.uuid4())
-    log("error", error_type + " error uuid: " + error_uuid + ", " + message)
+    error_uuid = str(shortuuid.uuid())
+    log("error", error_type + ", " + error_uuid + ":", message)
     return error_uuid
 
 
-def log(status, message):
-    try:
-        status_prefix = None
-        if status == "error":
-            status_prefix = "[%s ERROR] "
-        if status == "info":
-            status_prefix = "[%s INFO ] "
-        print(status_prefix % get_curr_timestamp() + message)
-        log_file = open(r"log/%s_%s.txt" % (secret.secret, get_start_timestamp().replace(" ", "_").replace(":", "-")), "a", encoding="utf8")
-        log_file.write(status_prefix % get_curr_timestamp() + message + "\n")
-        log_file.close()
-    except Exception as e:
-        status_prefix = "[%s ERROR] " % get_curr_timestamp()
-        print(status_prefix + "There is an error in a error reporter, HAHA, how ironic, %s" % str(e))
+def log(status, *messages):
+    for message in messages:
+        try:
+            status_prefix = None
+            if status == "error":
+                status_prefix = "[%s ERROR] "
+            if status == "info":
+                status_prefix = "[%s INFO] "
+            print(status_prefix % get_curr_timestamp() + message)
+            log_file = open(f"log/{secret.secret}_{get_start_timestamp().replace(' ', '_').replace(':', '-')}.txt",
+                            "a", encoding="utf8")
+            log_file.write(status_prefix % get_curr_timestamp() + message + "\n")
+            log_file.close()
+        except Exception as e:
+            status_prefix = "[%s ERROR] " % get_curr_timestamp()
+            print(f"{status_prefix}There is an error in an error reporter, HAHA, how ironic, {str(e).strip('.')}")
 
 
 def get_db_connection():

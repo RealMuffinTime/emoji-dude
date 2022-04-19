@@ -5,13 +5,14 @@ import utils
 from discord.ext import commands
 
 # TODO Index check, members in channel before bot start
+# TODO add afk column instead of time min
 
 # Version 1.1.0 ->
 #
 # New stuff
 #  - user gets not afk marked when stream or video active
 # Changes
-#  -
+#  - rework of afk management
 
 bot = None
 cogs = None
