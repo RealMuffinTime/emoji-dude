@@ -39,10 +39,15 @@ class Events(commands.Cog):
         if not member.bot:
             if before.self_deaf is True and after.self_deaf is True:
                 last_seen = await utils.execute_sql(f"SELECT last_seen FROM set_users WHERE user_id ='{str(member.id)}'", True)
-                if after.channel is not guild.afk_channel:
+                if before.channel is guild.afk_channel:
                     await utils.execute_sql(
-                        f"INSERT INTO set_users VALUES ('{member.id}', 0, '{last_seen[0][0]}', '{after.channel.id}', '{member.guild.id}') "
-                        f"ON DUPLICATE KEY UPDATE last_seen = '{last_seen[0][0]}', last_channel = '{after.channel.id}', last_guild = '{member.guild.id}'",
+                        f"INSERT INTO set_users VALUES ('{member.id}', 0, '{utils.get_curr_timestamp()}', '{after.channel.id}', '{member.guild.id}') "
+                        f"ON DUPLICATE KEY UPDATE last_seen = '{utils.get_curr_timestamp()}', last_channel = '{after.channel.id}', last_guild = '{member.guild.id}'",
+                        False)
+                elif after.channel is guild.afk_channel:
+                    await utils.execute_sql(
+                        f"INSERT INTO set_users VALUES ('{member.id}', 0, '{datetime.datetime.min}', '{before.channel.id}', '{member.guild.id}') "
+                        f"ON DUPLICATE KEY UPDATE last_seen = '{datetime.datetime.min}', last_channel = '{before.channel.id}', last_guild = '{member.guild.id}'",
                         False)
             elif after.self_deaf is True and after.channel is not None:
                 await utils.execute_sql(
