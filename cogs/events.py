@@ -39,7 +39,12 @@ class Events(commands.Cog):
         if not member.bot:
             if before.self_deaf is True and after.self_deaf is True:
                 last_seen = await utils.execute_sql(f"SELECT last_seen FROM set_users WHERE user_id ='{str(member.id)}'", True)
-                if before.channel is guild.afk_channel:
+                if after.channel is None:
+                    await utils.execute_sql(
+                        f"INSERT INTO set_users VALUES ('{member.id}', 0, NULL, NULL, NULL) "
+                        f"ON DUPLICATE KEY UPDATE last_seen = NULL, last_channel = NULL, last_guild = NULL",
+                        False)
+                elif before.channel is guild.afk_channel:
                     await utils.execute_sql(
                         f"INSERT INTO set_users VALUES ('{member.id}', 0, '{utils.get_curr_timestamp()}', '{after.channel.id}', '{member.guild.id}') "
                         f"ON DUPLICATE KEY UPDATE last_seen = '{utils.get_curr_timestamp()}', last_channel = '{after.channel.id}', last_guild = '{member.guild.id}'",
@@ -58,18 +63,19 @@ class Events(commands.Cog):
             if before.self_deaf is True and after.self_deaf is False:
                 if after.channel is guild.afk_channel:
                     last_channel = await utils.execute_sql(f"SELECT last_channel FROM set_users WHERE user_id ='{str(member.id)}'", True)
-                    print(last_channel)
                     last_channel = guild.get_channel(last_channel[0][0])
                     if last_channel is not None:
                         try:
                             await member.move_to(last_channel)
-                            await utils.execute_sql(f"INSERT INTO set_users VALUES ('{member.id}', 0, NULL, NULL, NULL)  ON DUPLICATE KEY UPDATE last_seen = NULL, last_channel = NULL, last_guild = NULL", False)
+                            await utils.execute_sql(f"INSERT INTO set_users VALUES ('{member.id}', 0, NULL, NULL, NULL) "
+                                                    f"ON DUPLICATE KEY UPDATE last_seen = NULL, last_channel = NULL, last_guild = NULL", False)
                             return
                         except Exception as e:
                             utils.on_error("on_voice_state_update()", str(e))
                 else:
                     await utils.execute_sql(
-                        f"INSERT INTO set_users VALUES ('{member.id}', 0, NULL, NULL, NULL)  ON DUPLICATE KEY UPDATE last_seen = NULL, last_channel = NULL, last_guild = NULL",
+                        f"INSERT INTO set_users VALUES ('{member.id}', 0, NULL, NULL, NULL) "
+                        f"ON DUPLICATE KEY UPDATE last_seen = NULL, last_channel = NULL, last_guild = NULL",
                         False)
 
         keyword = None
