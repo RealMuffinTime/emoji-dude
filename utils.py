@@ -17,8 +17,7 @@ def get_start_timestamp():
 def get_curr_timestamp(raw=False):
     if raw:
         return datetime.datetime.now()
-    else:
-        return str(datetime.datetime.now().replace(microsecond=0))
+    return str(datetime.datetime.now().replace(microsecond=0))
 
 
 def on_error(error_type, message):

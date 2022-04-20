@@ -6,6 +6,7 @@ from discord.ext import commands
 
 # TODO Index check, members in channel before bot start
 # TODO add afk column instead of time min
+# TODO add afk timeout as server sided to database
 
 # Version 1.1.0 ->
 #
@@ -109,6 +110,7 @@ async def update_guild_count():
 
 @get_bot().event
 async def on_ready():
+    utils.get_start_timestamp()
     utils.log("info", "Logged in as %s." % str(get_bot().user))
     for guild in get_bot().guilds:
         utils.log("info", " - %s (%s)" % (guild.name, guild.id))
