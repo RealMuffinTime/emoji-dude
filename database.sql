@@ -10,7 +10,7 @@
 -- set_guilds
 CREATE TABLE IF NOT EXISTS `set_guilds` (
   `guild_id` bigint(18) NOT NULL,
-  `auto_channel` varchar(50) DEFAULT '',
+  `managed_channel` varchar(50) DEFAULT '',
   PRIMARY KEY (`guild_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
