@@ -6,6 +6,8 @@ import secret_dev as secret
 start_timestamp = None
 db_connection = None
 
+# TODO scan for secret file, select available
+
 
 def get_start_timestamp():
     global start_timestamp

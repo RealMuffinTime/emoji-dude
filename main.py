@@ -4,15 +4,17 @@ import discord
 import utils
 from discord.ext import commands
 
-# TODO Index check, members in channel before bot start
-# TODO add new channel under last current existing
+# TODO managed_channel index check, members in channel before bot start
+# TODO managed_channel add new channel under last current existing
+# TODO managed_afk permission check for not logging as error
 
 # Version 1.1.0 ->
 #
 # New stuff
-#  - user gets not afk marked when stream or video active
+#  - user gets not afk managed when stream or video active
 # Changes
-#  - rework of afk management
+#  - multiple reworks of afk management
+#  - (error) logging optimization
 
 bot = None
 cogs = None
