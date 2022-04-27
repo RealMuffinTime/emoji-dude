@@ -20,9 +20,9 @@ def get_curr_timestamp(raw=False):
     return str(datetime.datetime.now().replace(microsecond=0))
 
 
-def on_error(error_type, message):
+def on_error(error_type, *messages):
     error_uuid = str(shortuuid.uuid())
-    log("error", error_type + ", " + error_uuid + ":", message)
+    log("error", error_type + ", " + error_uuid + ":", *messages)
     return error_uuid
 
 
@@ -86,5 +86,5 @@ async def execute_sql(sql_term, fetch):
         if cursor.rowcount == 0 and fetch is True:
             return []
     except Exception as e:
-        on_error("execute_sql()", str(e).strip('.'))
-        return None
+        on_error(f"execute_sql(), fetch: {fetch}", f"{sql_term}", str(e).strip('.'))
+        return []
