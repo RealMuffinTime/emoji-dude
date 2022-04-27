@@ -38,7 +38,6 @@ class Events(commands.Cog):
         guild = member.guild
         if not member.bot:
             member_status = await utils.execute_sql(f"SELECT afk_managed, last_seen, last_channel FROM set_users WHERE user_id ='{str(member.id)}'", True)
-            print(member_status)
             if after.self_deaf is True and after.channel is not None:
                 if before.self_deaf is True:
                     if before.channel is member.guild.afk_channel:
