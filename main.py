@@ -5,8 +5,7 @@ import utils
 from discord.ext import commands
 
 # TODO Index check, members in channel before bot start
-# TODO add afk column instead of time min
-# TODO add afk timeout as server sided to database
+# TODO add new channel under last current existing
 
 # Version 1.1.0 ->
 #
@@ -56,32 +55,26 @@ def get_version():
 
 
 async def check_afk():
-    afk_members = await utils.execute_sql(f"SELECT user_id, last_seen, last_guild FROM set_users WHERE last_seen IS NOT NULL", True)
+    afk_members = await utils.execute_sql(f"SELECT set_users.user_id, set_users.last_seen, set_users.last_guild, set_guilds.managed_afk_timeout, set_users.afk_managed FROM set_users "
+                                          f"INNER JOIN set_guilds ON set_users.last_guild = set_guilds.guild_id "
+                                          f"WHERE last_seen IS NOT NULL", True)
     for afk_member in afk_members:
-        if afk_member[1] != datetime.datetime.min and utils.get_curr_timestamp(True) - afk_member[1] >= datetime.timedelta(seconds=120):
+        if afk_member[4] == 0 and utils.get_curr_timestamp(True) - afk_member[1] >= datetime.timedelta(seconds=afk_member[3]):
             last_guild = get_bot().get_guild(afk_member[2])
-            if last_guild is not None:
-                member = await last_guild.fetch_member(afk_member[0])
-                if member.voice is None:
-                    await utils.execute_sql(f"INSERT INTO set_users VALUES ('{member.id}', 0, NULL, NULL, NULL) "
-                                            f"ON DUPLICATE KEY UPDATE last_seen = NULL, last_channel = NULL, last_guild = NULL", False)
-                else:
-                    if member.voice.self_deaf is True:
-                        if not member.voice.self_stream or not member.voice.self_video:
-                            last_channel = member.voice.channel
-                            try:
-                                await member.move_to(last_guild.afk_channel)
-                                await utils.execute_sql(
-                                    f"INSERT INTO set_users VALUES ('{member.id}', 0, '{datetime.datetime.min}', '{last_channel.id}', '{last_guild.id}') "
-                                    f"ON DUPLICATE KEY UPDATE last_seen = '{datetime.datetime.min}', last_channel = '{last_channel.id}', last_guild = '{last_guild.id}'",
-                                    False)
-                            except Exception as e:
-                                utils.on_error("check_afk()", str(e))
-                        else:
-                            await utils.execute_sql(
-                                f"INSERT INTO set_users VALUES ('{member.id}', 0, NULL, NULL, NULL) "
-                                f"ON DUPLICATE KEY UPDATE last_seen = NULL, last_channel = NULL, last_guild = NULL",
-                                False)
+            member = await last_guild.fetch_member(afk_member[0])
+            if member.voice is None:
+                await utils.execute_sql(f"INSERT INTO set_users VALUES ('{member.id}', 0, 0, NULL, NULL, NULL) "
+                                        f"ON DUPLICATE KEY UPDATE afk_managed = 0, last_seen = NULL, last_channel = NULL, last_guild = NULL", False)
+            elif member.voice.self_deaf is True and not member.voice.self_stream and not member.voice.self_video:
+                last_channel = member.voice.channel
+                try:
+                    await member.move_to(last_guild.afk_channel)
+                    await utils.execute_sql(
+                        f"INSERT INTO set_users VALUES ('{member.id}', 0, 1, '{afk_member[1]}', '{last_channel.id}', '{last_guild.id}') "
+                        f"ON DUPLICATE KEY UPDATE afk_managed = 1, last_seen = '{afk_member[1]}', last_channel = '{last_channel.id}', last_guild = '{last_guild.id}'",
+                        False)
+                except Exception as e:
+                    utils.on_error("check_afk()", str(e))
 
 
 async def cron():
@@ -125,7 +118,7 @@ async def on_ready():
         if get_bot().get_cog(type(cog).__name__) is None:
             get_bot().load_extension(cog)
     for guild in get_bot().guilds:
-        await utils.execute_sql(f"INSERT IGNORE INTO set_guilds VALUES ('{guild.id}', NULL)", False)
+        await utils.execute_sql(f"INSERT IGNORE INTO set_guilds (guild_id) VALUES ('{guild.id}')", False)
     await update_guild_count()
     await cron()
 
