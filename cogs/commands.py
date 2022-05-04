@@ -113,7 +113,7 @@ class Commands(commands.Cog):
                                f'One Message round-trip took **{int((datetime.datetime.now() - start).microseconds / 1000)}ms**.\n'
                                f'Ping of the bot **{int(self.bot.latency * 1000)}ms**.')
 
-    @commands.command(name='backupchannel', aliases=['bc'], description='can be used to backup channel to another one')
+    @commands.command(name='backupchannel', aliases=['bc'], description='can be used to back up channel to another one')
     async def backupchannel_command(self, ctx):
         if ctx.author.id == 412235309204635649:
             content = ctx.message.content.split(" ")
@@ -199,7 +199,7 @@ class Commands(commands.Cog):
 
         await message.edit(content=f'**ClearUp**\nDeleted **{len(deleted) - 1}** message(s)', delete_after=5)
 
-    @commands.command(name='emojis', aliases=['e'], description='sends much emojis, cip cap 27')
+    @commands.command(name='emojis', aliases=['e'], description='sends many emojis, cip cap 27')
     async def emojis_command(self, ctx):
         if ctx.author.bot:
             return
