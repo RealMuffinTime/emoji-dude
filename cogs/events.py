@@ -134,6 +134,10 @@ class Events(commands.Cog):
     async def managed_afk_command(self, ctx):
         return
 
+    @commands.command(name='AutoReaction', description='the bot reacts to specific parts of message with emotes')
+    async def auto_reaction_command(self, ctx):
+        return
+
     @commands.Cog.listener()
     async def on_guild_join(self, guild):
         await utils.execute_sql(f"INSERT INTO set_guilds VALUES ('{guild.id}', NULL)  ON DUPLICATE KEY UPDATE managed_channel = NULL", False)

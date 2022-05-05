@@ -1,17 +1,5 @@
 # emoji dude
 
-## Supported emojis / Usage
-
-* :lollipop: / lol
-* :poop: / poop
-* :cool: / cool
-
-
-## Usage
-
-### If you want reactions type
-* ...lol..., ...poop..., etc.
-
 ## Commands
 
 ### `ed.ping`
@@ -31,6 +19,7 @@
 
 ### `ed.emojis `
 * Sends many emojis, you can choose between 1-27 emotes
+* Supported emojis are lol/poop/cool
 * `ed.emojis <emoji> <amount>`, as example: `ed.emojis poop 21`
 
 ### `ed.help`
@@ -54,3 +43,7 @@
 ### ManagedChannel
 * Automatically creates VoiceChannels when needed
 * (Currently, it's not possible to activate this yourself, contact if needed)
+
+### AutoReaction
+* The bot reacts to specific parts in a message with emotes
+* Supported phrases are lol/poop/cool
