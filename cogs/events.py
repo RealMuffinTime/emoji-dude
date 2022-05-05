@@ -42,7 +42,7 @@ class Events(commands.Cog):
                 if before.self_deaf is True:
                     if before.channel is member.guild.afk_channel:
                         last_seen = member_status[0][1]
-                        if member_status is None:
+                        if last_seen is None:
                             last_seen = utils.get_curr_timestamp()
                         await utils.execute_sql(
                             f"INSERT INTO set_users VALUES ('{member.id}', 0, 0, '{utils.get_curr_timestamp()}', '{after.channel.id}', '{member.guild.id}') "
@@ -140,15 +140,15 @@ class Events(commands.Cog):
 
     @commands.Cog.listener()
     async def on_guild_join(self, guild):
-        await utils.execute_sql(f"INSERT INTO set_guilds VALUES ('{guild.id}', NULL)  ON DUPLICATE KEY UPDATE managed_channel = NULL", False)
+        await utils.execute_sql(f"INSERT INTO set_guilds VALUES ('{guild.id}', NULL, '120')  ON DUPLICATE KEY UPDATE managed_channel = NULL", False)
         await utils.execute_sql("INSERT INTO stat_bot_guilds (action) VALUES ('add');", False)
-        utils.log("info", f"Guild join '{str(guild.name)} {str(guild.id)}'.")
+        utils.log("info", f"Guild join '{str(guild.id)}'.")
 
     @commands.Cog.listener()
     async def on_guild_remove(self, guild):
         await utils.execute_sql(f"UPDATE set_guilds SET managed_channel = NULL WHERE guild_id = '{guild.id}';", False)
         await utils.execute_sql("INSERT INTO stat_bot_guilds (action) VALUES ('remove');", False)
-        utils.log("info", f"Guild leave '{str(guild.name)} {str(guild.id)}'.")
+        utils.log("info", f"Guild leave '{str(guild.id)}'.")
 
 
 def setup(bot):
