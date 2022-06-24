@@ -193,7 +193,7 @@ class Commands(commands.Cog):
         def is_clear_message(m):
             if m == message:
                 return False
-            return False
+            return True
 
         deleted = await ctx.channel.purge(limit=limit + 2, check=is_clear_message, bulk=True)
 
