@@ -23,6 +23,9 @@ class Events(commands.Cog):
                 if emoji[0] in ctx.content.upper():
                     for reaction in emoji[2]:
                         await ctx.add_reaction(reaction)
+        # TODO with discord.py>=2.0.0
+        # if author.id == 324631108731928587 and ctx.content.startswith(":bar_chart: "):
+        #     await ctx.create_thread(name=ctx.content.replace(":bar_chart: ", ""), auto_archive_duration=1440)
 
     # @commands.Cog.listener()
     # async def on_member_remove(self, ctx):
@@ -137,6 +140,11 @@ class Events(commands.Cog):
     @commands.command(name='AutoReaction', description='the bot reacts to specific parts of message with emotes')
     async def auto_reaction_command(self, ctx):
         return
+
+    # TODO with discord.py>=2.0.0
+    # @commands.command(name='AutoThreadCreation', description='the bot creates a thread for Simple Poll polls')
+    # async def auto_thread_creation_command(self, ctx):
+    #     return
 
     @commands.Cog.listener()
     async def on_guild_join(self, guild):
