@@ -1,6 +1,7 @@
 import asyncio
 import datetime
 import discord
+import traceback
 import utils
 from discord.ext import commands
 
@@ -75,8 +76,9 @@ async def check_afk():
                         f"INSERT INTO set_users VALUES ('{member.id}', 0, 1, '{afk_member[1]}', '{last_channel.id}', '{last_guild.id}') "
                         f"ON DUPLICATE KEY UPDATE afk_managed = 1, last_seen = '{afk_member[1]}', last_channel = '{last_channel.id}', last_guild = '{last_guild.id}'",
                         False)
-                except Exception as e:
-                    utils.on_error("check_afk()", str(e))
+                except Exception:
+                    trace = traceback.format_exc().rstrip("\n").split("\n")
+                    utils.on_error("check_afk()", *trace)
 
 
 async def cron():
@@ -98,9 +100,9 @@ async def update_guild_count():
             diff = guild_count - guild_count_db
             for count in range(diff):
                 await utils.execute_sql("INSERT INTO stat_bot_guilds (action) VALUES ('add');", False)
-
-    except Exception as e:
-        utils.on_error("update_guild_count()", str(e).strip('.'))
+    except Exception:
+        trace = traceback.format_exc().rstrip("\n").split("\n")
+        utils.on_error("update_guild_count()", *trace)
 
 
 @get_bot().event
@@ -128,4 +130,5 @@ async def on_ready():
 try:
     get_bot().run(utils.secret.bot_token, bot=True, reconnect=False)
 except Exception as e:
-    utils.on_error("run()", str(e))
+    trace = traceback.format_exc().rstrip("\n").split("\n")
+    utils.on_error("run()", *trace)
