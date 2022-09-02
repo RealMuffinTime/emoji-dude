@@ -5,7 +5,7 @@ import traceback
 import utils
 from discord.ext import commands
 
-# TODO managed_channel index check, members in channel before bot start
+# TODO managed_channel deleting already deleted channel (more info needed)
 # TODO managed_channel add new channel under last current existing
 # TODO managed_afk permission check for not logging as error
 
@@ -109,18 +109,19 @@ async def update_guild_count():
 async def on_ready():
     utils.get_start_timestamp()
     utils.log("info", "Logged in as %s." % str(get_bot().user))
+    get_bot().remove_command('help')
+    for cog in get_cogs():
+        if get_bot().get_cog(type(cog).__name__) is None:
+            get_bot().load_extension(cog)
     for guild in get_bot().guilds:
         utils.log("info", " - %s (%s)" % (guild.name, guild.id))
-    get_bot().remove_command('help')
+        await get_bot().get_cog("Events").managed_channel_command(guild)
     await get_bot().change_presence(
         activity=discord.Streaming(
             name="Happily this isn't shown, because then you would know, that this is a rick roll. :)",
             details="nobody beats me in emoting",
             url="https://www.youtube.com/watch?v=dQw4w9WgXcQ",
             type=discord.ActivityType.streaming))
-    for cog in get_cogs():
-        if get_bot().get_cog(type(cog).__name__) is None:
-            get_bot().load_extension(cog)
     for guild in get_bot().guilds:
         await utils.execute_sql(f"INSERT IGNORE INTO set_guilds (guild_id) VALUES ('{guild.id}')", False)
     await update_guild_count()
