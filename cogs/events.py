@@ -54,32 +54,18 @@ class Events(commands.Cog):
     async def managed_channel_command(self, guild):
         if isinstance(guild, discord.guild.Guild):
             keyword = None
-            keyword = (
-                await utils.execute_sql(f"SELECT managed_channel FROM set_guilds WHERE guild_id ='{str(guild.id)}'",
-                                        True))[0][0]
+            keyword = (await utils.execute_sql(f"SELECT managed_channel FROM set_guilds WHERE guild_id ='{str(guild.id)}'", True))[0][0]
             if keyword:
                 empty_channels = []
+                used_channels = []
                 for channel in guild.voice_channels:
                     if channel.name.startswith(keyword):
                         if len(channel.voice_states.keys()) == 0:
                             empty_channels.append(channel)
+                        else:
+                            used_channels.append(channel)
 
-                if not empty_channels:
-                    highest_channel = None
-                    for channel in guild.voice_channels:
-                        if channel.name.startswith(keyword):
-                            pair = channel.name.split(" ")
-                            pair[0] = channel
-                            pair[-1] = int(pair[-1])
-                            if highest_channel is None:
-                                highest_channel = pair
-                            elif pair[-1] > highest_channel[-1]:
-                                highest_channel = pair
-                    channel = highest_channel[0]
-                    if channel.permissions_for(channel.guild.me).manage_channels:
-                        await guild.create_voice_channel(name=keyword + " " + str(highest_channel[-1] + 1),
-                                                         category=channel.category)
-                else:
+                if empty_channels:
                     lowest_channel = None
                     for channel in empty_channels:
                         pair = channel.name.split(" ")
@@ -93,6 +79,20 @@ class Events(commands.Cog):
                     for channel in empty_channels:
                         if channel.permissions_for(channel.guild.me).manage_channels:
                             await channel.delete()
+                else:
+                    highest_channel = None
+                    for channel in used_channels:
+                        pair = channel.name.split(" ")
+                        pair[0] = channel
+                        pair[-1] = int(pair[-1])
+                        if highest_channel is None:
+                            highest_channel = pair
+                        elif pair[-1] > highest_channel[-1]:
+                            highest_channel = pair
+                    channel = highest_channel[0]
+                    if channel.permissions_for(channel.guild.me).manage_channels:
+                        await guild.create_voice_channel(name=keyword + " " + str(highest_channel[-1] + 1),
+                                                         category=channel.category, position=channel.position + 1)
 
     @commands.command(name='ManagedAFK', description='the bot moves muted users to the afk channel and back')
     async def managed_afk_command(self, member, before, after):

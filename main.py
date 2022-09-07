@@ -6,13 +6,13 @@ import utils
 from discord.ext import commands
 
 # TODO managed_channel deleting already deleted channel (more info needed)
-# TODO managed_channel add new channel under last current existing
-# TODO managed_afk permission check for not logging as error
+# TODO managed_afk permission check for not logging as error and move entirely to events
 
 # Version 1.1.0 ->
 #
 # New stuff
 #  - user gets not afk managed when stream or video active
+#  - managed channel adds new channel under last current existing
 # Changes
 #  - multiple reworks of afk management
 #  - (error) logging optimization
