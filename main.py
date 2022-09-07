@@ -13,6 +13,7 @@ from discord.ext import commands
 # New stuff
 #  - user gets not afk managed when stream or video active
 #  - managed channel adds new channel under last current existing
+#  - managed channel checks for channels after start of bot
 # Changes
 #  - multiple reworks of afk management
 #  - (error) logging optimization

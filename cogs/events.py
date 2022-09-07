@@ -43,9 +43,9 @@ class Events(commands.Cog):
     @commands.Cog.listener()
     async def on_voice_state_update(self, member, before, after):
         try:
-            await self.managed_afk_command(member, before, after)
-
             await self.managed_channel_command(member.guild)
+
+            await self.managed_afk_command(member, before, after)
         except Exception:
             trace = traceback.format_exc().rstrip("\n").split("\n")
             utils.on_error("on_voice_state_update()", *trace)
@@ -91,8 +91,8 @@ class Events(commands.Cog):
                             highest_channel = pair
                     channel = highest_channel[0]
                     if channel.permissions_for(channel.guild.me).manage_channels:
-                        await guild.create_voice_channel(name=keyword + " " + str(highest_channel[-1] + 1),
-                                                         category=channel.category, position=channel.position + 1)
+                        await (await guild.create_voice_channel(name=keyword + " " + str(highest_channel[-1] + 1),
+                                                                category=channel.category)).move(after=channel)
 
     @commands.command(name='ManagedAFK', description='the bot moves muted users to the afk channel and back')
     async def managed_afk_command(self, member, before, after):
