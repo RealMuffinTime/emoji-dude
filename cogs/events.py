@@ -19,11 +19,7 @@ class Events(commands.Cog):
                 return
             if ctx.content.startswith("ed."):
                 return
-            if ctx.channel.permissions_for(ctx.guild.me).add_reactions:
-                for emoji in emojis:
-                    if emoji[0] in ctx.content.upper():
-                        for reaction in emoji[2]:
-                            await ctx.add_reaction(reaction)
+            await self.auto_reaction_command(ctx)
             # TODO with discord.py>=2.0.0
             # if author.id == 324631108731928587 and ctx.content.startswith(":bar_chart: "):
             #     await ctx.create_thread(name=ctx.content.replace(":bar_chart: ", ""), auto_archive_duration=1440)
@@ -151,7 +147,12 @@ class Events(commands.Cog):
 
     @commands.command(name='AutoReaction', description='the bot reacts to specific parts of message with emotes')
     async def auto_reaction_command(self, ctx):
-        return
+        if isinstance(ctx, discord.Message):
+            if ctx.channel.permissions_for(ctx.guild.me).add_reactions:
+                for emoji in emojis:
+                    if emoji[0] in ctx.content.upper():
+                        for reaction in emoji[2]:
+                            await ctx.add_reaction(reaction)
 
     # TODO with discord.py>=2.0.0
     # @commands.command(name='AutoThreadCreation', description='the bot creates a thread for Simple Poll polls')
