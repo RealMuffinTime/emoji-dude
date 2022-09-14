@@ -15,6 +15,7 @@ from discord.ext import commands
 #  - managed channel adds new channel under last current existing
 #  - managed channel checks for channels after start of bot
 # Changes
+#  - moved to discord.py v2.x
 #  - multiple reworks of afk management
 #  - (error) logging optimization
 
@@ -29,10 +30,11 @@ def get_bot():
     global bot
     if bot is None:
         bot = commands.Bot(
+            case_insensitive=True,
             command_prefix=get_prefix(),
             description='a emoji spamming dude',
-            owner_id=412235309204635649,
-            case_insensitive=True
+            intents=discord.Intents.all(),
+            owner_id=412235309204635649
         )
     return bot
 
@@ -56,6 +58,15 @@ def get_version():
     if version is None:
         version = "1.1.0"
     return version
+
+
+async def main():
+    async with get_bot():
+        get_bot().remove_command('help')
+        for cog in get_cogs():
+            if get_bot().get_cog(type(cog).__name__) is None:
+                await get_bot().load_extension(cog)
+        await get_bot().start(utils.secret.bot_token, reconnect=False)
 
 
 async def check_afk():
@@ -110,10 +121,6 @@ async def update_guild_count():
 async def on_ready():
     utils.get_start_timestamp()
     utils.log("info", "Logged in as %s." % str(get_bot().user))
-    get_bot().remove_command('help')
-    for cog in get_cogs():
-        if get_bot().get_cog(type(cog).__name__) is None:
-            get_bot().load_extension(cog)
     for guild in get_bot().guilds:
         utils.log("info", " - %s (%s)" % (guild.name, guild.id))
         await get_bot().get_cog("Events").managed_channel_command(guild)
@@ -129,8 +136,9 @@ async def on_ready():
     await cron()
 
 
-try:
-    get_bot().run(utils.secret.bot_token, bot=True, reconnect=False)
-except Exception as e:
-    trace = traceback.format_exc().rstrip("\n").split("\n")
-    utils.on_error("run()", *trace)
+asyncio.run(main())
+# try:
+#     get_bot().run(utils.secret.bot_token, bot=True, reconnect=False)
+# except Exception as e:
+#     trace = traceback.format_exc().rstrip("\n").split("\n")
+#     utils.on_error("run()", *trace)
