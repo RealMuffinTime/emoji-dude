@@ -20,21 +20,17 @@ class Events(commands.Cog):
             if ctx.content.startswith("ed."):
                 return
             await self.auto_reaction_command(ctx)
-            # TODO with discord.py>=2.0.0
-            # if author.id == 324631108731928587 and ctx.content.startswith(":bar_chart: "):
-            #     await ctx.create_thread(name=ctx.content.replace(":bar_chart: ", ""), auto_archive_duration=1440)
         except Exception:
             trace = traceback.format_exc().rstrip("\n").split("\n")
             utils.on_error("on_message()", *trace)
 
-    # @commands.Cog.listener()
-    # async def on_member_remove(self, ctx):
-    #     channel = self.bot.get_channel(646043498717380610)
-    #     await channel.send("\nsomeone let us alone...\n{}".format())
-    #
-    # @commands.Cog.listener()
-    # async def on_member_join(self, role: discord.Role, member: discord.Member = None):
-    #     await self.bot.add_role(member, role)
+    @commands.Cog.listener()
+    async def on_raw_message_edit(self, data):
+        try:
+            await self.auto_poll_thread_creation_command(data)
+        except Exception:
+            trace = traceback.format_exc().rstrip("\n").split("\n")
+            utils.on_error("on_voice_state_update()", *trace)
 
     @commands.Cog.listener()
     async def on_voice_state_update(self, member, before, after):
@@ -45,6 +41,15 @@ class Events(commands.Cog):
         except Exception:
             trace = traceback.format_exc().rstrip("\n").split("\n")
             utils.on_error("on_voice_state_update()", *trace)
+
+    # @commands.Cog.listener()
+    # async def on_member_remove(self, ctx):
+    #     channel = self.bot.get_channel(646043498717380610)
+    #     await channel.send("\nsomeone let us alone...\n{}".format())
+    #
+    # @commands.Cog.listener()
+    # async def on_member_join(self, role: discord.Role, member: discord.Member = None):
+    #     await self.bot.add_role(member, role)
 
     @commands.command(name='ManagedChannel', description='the bot creates and removes voice channels when needed')
     async def managed_channel_command(self, guild):
@@ -154,11 +159,28 @@ class Events(commands.Cog):
                         for reaction in emoji[2]:
                             await ctx.add_reaction(reaction)
 
-    # TODO with discord.py>=2.0.0
-    # @commands.command(name='AutoThreadCreation', description='the bot creates a thread for Simple Poll polls')
-    # async def auto_thread_creation_command(self, ctx):
-    #     return
-
+    @commands.command(name='AutoPollThreadCreation', description='the bot creates threads for each Simple Poll poll')
+    async def auto_poll_thread_creation_command(self, data):
+        if isinstance(data, discord.RawMessageUpdateEvent):
+            raw_data = data.data
+            try:
+                webhook_id = int(raw_data['webhook_id'])
+                content = raw_data['content']
+                guild_id = int(raw_data['guild_id'])
+                channel_id = int(raw_data['channel_id'])
+                message_id = int(raw_data['id'])
+                guild = self.bot.get_guild(guild_id)
+                channel = guild.get_channel(channel_id)
+                message = await channel.fetch_message(message_id)
+                if webhook_id == 324631108731928587:
+                    if channel.permissions_for(guild.me).create_public_threads:
+                        thread = await message.create_thread(
+                            name=message.clean_content.replace("*", "").replace(":bar_chart: ", ""),
+                            auto_archive_duration=1440)
+                        await thread.leave()
+            except KeyError as e:
+                pass
+            
     # TODO remove reaction if multiple reactions by user on simple poll message
 
     @commands.Cog.listener()
