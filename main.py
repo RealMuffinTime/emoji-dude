@@ -5,21 +5,17 @@ import traceback
 import utils
 from discord.ext import commands
 
+# TODO make managed channel not async???
 # TODO managed_channel deleting already deleted channel (more info needed)
 # TODO managed_afk permission check for not logging as error and move entirely to events
 # TODO remove reaction if multiple reactions by user on simple poll message
 
-# Version 1.1.0 ->
+# Version 2.0.0 ->
 #
 # New stuff
-#  - user gets not afk managed when stream or video active
-#  - managed channel adds new channel under last current existing
-#  - managed channel checks for channels after start of bot
+#  -
 # Changes
-#  - optimized help command: dynamic title, dynamic prefix
-#  - moved to discord.py v2.x
-#  - multiple reworks of afk management
-#  - (error) logging optimization
+#  -
 
 bot = None
 cogs = None
@@ -58,7 +54,7 @@ def get_prefix():
 def get_version():
     global version
     if version is None:
-        version = "1.1.0"
+        version = "2.0.0"
     return version
 
 
