@@ -92,8 +92,8 @@ class Events(commands.Cog):
                             highest_channel = pair
                     channel = highest_channel[0]
                     if channel.permissions_for(channel.guild.me).manage_channels:
-                        await (await guild.create_voice_channel(name=keyword + " " + str(highest_channel[-1] + 1),
-                                                                category=channel.category)).move(after=channel)
+                        new_channel = await guild.create_voice_channel(name=keyword + " " + str(highest_channel[-1] + 1), category=channel.category)
+                        await new_channel.move(after=channel)
 
     @commands.command(name='ManagedAFK', description='the bot moves muted users to the afk channel and back')
     async def managed_afk_command(self, member, before, after):

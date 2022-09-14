@@ -35,7 +35,7 @@ class Commands(commands.Cog):
             )
             help_embed.set_footer(
                 text=f'Requested by {ctx.message.author.name}',
-                icon_url=ctx.message.author.avatar_url
+                icon_url=ctx.message.author.avatar
             )
 
             # Get a list of all cogs
