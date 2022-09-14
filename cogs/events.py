@@ -180,8 +180,6 @@ class Events(commands.Cog):
                         await thread.leave()
             except KeyError as e:
                 pass
-            
-    # TODO remove reaction if multiple reactions by user on simple poll message
 
     @commands.Cog.listener()
     async def on_guild_join(self, guild):
