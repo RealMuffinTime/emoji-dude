@@ -29,10 +29,8 @@ class Commands(commands.Cog):
                     return
                 color = ctx.channel.guild.me.color.value
 
-            help_embed = discord.Embed(
-                title=f'Help page of {self.bot.user}',
-                color=color
-            )
+            help_embed = discord.Embed(color=color)
+
             help_embed.set_footer(
                 text=f'Requested by {ctx.message.author.name}',
                 icon_url=ctx.message.author.avatar
@@ -44,6 +42,9 @@ class Commands(commands.Cog):
             # If cog is not specified by the user, we list all cogs and commands
 
             if cog == 'all':
+
+                help_embed.title = f"Help page of {self.bot.user}"
+
                 for cog in cogs:
                     # Get a list of all commands under each cog
 
@@ -74,7 +75,9 @@ class Commands(commands.Cog):
                 if cog.lower() in lower_cogs:
 
                     # Get a list of all commands in the specified cog
-                    commands_list = self.bot.get_cog(cogs[lower_cogs.index(cog.lower())]).get_commands()
+                    cog_object = self.bot.get_cog(cogs[lower_cogs.index(cog.lower())])
+                    help_embed.title = f"Help page for {cog.title()}"
+                    commands_list = cog_object.get_commands()
                     help_text = ''
 
                     # Add details of each command to the help text
@@ -91,8 +94,7 @@ class Commands(commands.Cog):
                             help_text += f"Aliases: `{', '.join(command.aliases)}`\n"
 
                         # Finally the format
-                        help_text += f'Format: `@{self.bot.user.name}#{self.bot.user.discriminator}' \
-                                     f' {command.name} {command.usage if command.usage is not None else ""}`\n\n'
+                        help_text += f'Format: `{ctx.prefix}{command.name} {command.usage if command.usage is not None else ""}`\n\n'
 
                     help_embed.description = help_text
                 else:

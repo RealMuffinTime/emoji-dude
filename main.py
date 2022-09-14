@@ -16,6 +16,7 @@ from discord.ext import commands
 #  - managed channel adds new channel under last current existing
 #  - managed channel checks for channels after start of bot
 # Changes
+#  - optimized help command: dynamic title, dynamic prefix
 #  - moved to discord.py v2.x
 #  - multiple reworks of afk management
 #  - (error) logging optimization
