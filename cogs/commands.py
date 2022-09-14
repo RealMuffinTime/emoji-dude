@@ -13,7 +13,7 @@ class Commands(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
-    @commands.command(name='help', description='The help command!', aliases=['commands', 'command', 'start'], usage='cog')
+    @commands.command(name='help', description='The help command!', aliases=['commands', 'command', 'start'], usage='<category>')
     async def help_command(self, ctx, cog='all'):
         try:
             # The third parameter comes into play when
@@ -49,8 +49,8 @@ class Commands(commands.Cog):
 
                     cog_commands = self.bot.get_cog(cog).get_commands()
                     commands_list = ''
-                    for comm in cog_commands:
-                        commands_list += f'**{comm.name}** - *{comm.description}*\n'
+                    for command in cog_commands:
+                        commands_list += f'**{command.name}** - *{command.description}*\n'
 
                     # Add the cog's details to the embed.
 
@@ -105,10 +105,10 @@ class Commands(commands.Cog):
             trace = traceback.format_exc().rstrip("\n").split("\n")
             utils.on_error("help_command()", *trace)
 
-    @commands.command(name='settings', description='Not implemented yet.',)
+    @commands.command(name='settings', description='Not implemented yet.')
     async def settings_command(self, ctx):
         try:
-            await ctx.send(content="Can't answer:\nNot implemented yet.")
+            await ctx.send(content="**Settings**\nNot implemented yet.")
         except Exception:
             trace = traceback.format_exc().rstrip("\n").split("\n")
             utils.on_error("settings_command()", *trace)
@@ -196,17 +196,16 @@ class Commands(commands.Cog):
 
             deleted = await ctx.channel.purge(check=check)
 
-            await message.edit(content=f'**CleanUp**\nDeleted **{len(deleted) - 1}** message(s)', delete_after=5)
+            await message.edit(content=f'**CleanUp**\nDeleted **{len(deleted) - 1}** message(s).', delete_after=5)
         except Exception:
             trace = traceback.format_exc().rstrip("\n").split("\n")
             utils.on_error("clean_command()", *trace)
 
-    @commands.command(name='clear', description='clears messages')
-    async def clear_command(self, ctx):
+    @commands.command(name='clear', description='clears messages', usage='<amount>')
+    async def clear_command(self, ctx, amount):
         try:
-            limit = ctx.message.content.split(" ")[-1]
             try:
-                limit = int(limit)
+                amount = int(amount)
             except Exception:
                 await ctx.send(content='**ClearUp**\nIncorrect command usage.')
                 return
@@ -217,15 +216,15 @@ class Commands(commands.Cog):
                     return False
                 return True
 
-            deleted = await ctx.channel.purge(limit=limit + 2, check=is_clear_message, bulk=True)
+            deleted = await ctx.channel.purge(limit=amount + 2, check=is_clear_message, bulk=True)
 
-            await message.edit(content=f'**ClearUp**\nDeleted **{len(deleted) - 1}** message(s)', delete_after=5)
+            await message.edit(content=f'**ClearUp**\nDeleted **{len(deleted) - 1}** message(s).', delete_after=5)
         except Exception:
             trace = traceback.format_exc().rstrip("\n").split("\n")
             utils.on_error("clear_command()", *trace)
 
-    @commands.command(name='emojis', aliases=['e'], description='sends many emojis, cip cap 27')
-    async def emojis_command(self, ctx):
+    @commands.command(name='emojis', aliases=['e'], description='sends many emojis, cip cap 27', usage='<emoji> <amount>')
+    async def emojis_command(self, ctx):  # , emoji, amount
         try:
             if ctx.author.bot:
                 return
