@@ -139,19 +139,20 @@ class Commands(commands.Cog):
                     except Exception as e:
                         await ctx.send("**BackupChannel**\nInvalid channels.")
                         return
-                    status_message = await ctx.send(
-                        f"**BackupChannel**\nBeginning backup from <#{from_channel.id}> to <#{to_channel.id}>.\nSearching for messages...")
-                    backup_messages = await from_channel.history(limit=None, oldest_first=True).flatten()
-                    await status_message.edit(
-                        content=f"**BackupChannel**\nBeginning backup of <#{from_channel.id}> to <#{to_channel.id}>.\nFound {len(backup_messages)} messages.")
-                    allowed_mentions = discord.AllowedMentions(everyone=False, users=False, roles=False, replied_user=False)
+
+                    status_message = await ctx.send(f"**BackupChannel**\nBeginning backup from <#{from_channel.id}> to <#{to_channel.id}>.\nSearching for messages...")
+                    backup_messages = [message async for message in from_channel.history(limit=None, oldest_first=True)]
+
+                    await status_message.edit(content=f"**BackupChannel**\nBeginning backup of <#{from_channel.id}> to <#{to_channel.id}>.\nFound {len(backup_messages)} messages.")
+
                     for message in backup_messages:
                         timestamp = int(message.created_at.timestamp())
                         if message.edited_at is not None:
                             timestamp = int(message.edited_at.timestamp())
-                            await to_channel.send(f"--- At <t:{timestamp}:f> wrote <@!{message.author.id}> ---",
-                                                  allowed_mentions=allowed_mentions)
-                            await to_channel.send(message.content, allowed_mentions=allowed_mentions)
+
+                        allowed_mentions = discord.AllowedMentions().none()
+                        await to_channel.send(f"--- At <t:{timestamp}:f> wrote <@!{message.author.id}> ---", allowed_mentions=allowed_mentions)
+                        await to_channel.send(message.content, allowed_mentions=allowed_mentions)
                 else:
                     await ctx.send("**BackupChannel**\nInvalid input.")
                     return
