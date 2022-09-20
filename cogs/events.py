@@ -192,7 +192,7 @@ class Events(commands.Cog):
 
     @commands.Cog.listener()
     async def on_guild_join(self, guild):
-        await utils.execute_sql(f"INSERT INTO set_guilds VALUES ('{guild.id}', NULL, '120')  ON DUPLICATE KEY UPDATE managed_channel = NULL", False)
+        await utils.execute_sql(f"INSERT INTO set_guilds VALUES ('{guild.id}') ON DUPLICATE KEY UPDATE managed_channel = NULL", False)
         await utils.execute_sql("INSERT INTO stat_bot_guilds (action) VALUES ('add');", False)
         utils.log("info", f"Guild join '{str(guild.id)}'.")
 
