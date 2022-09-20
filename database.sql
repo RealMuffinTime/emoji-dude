@@ -11,7 +11,8 @@
 CREATE TABLE IF NOT EXISTS `set_guilds` (
   `guild_id` bigint(18) NOT NULL,
   `managed_channel` varchar(50) DEFAULT '',
-  `managed_afk_timeout` BIGINT(18) NOT NULL DEFAULT '120',
+  `managed_channel_running` tinyint(1) NOT NULL DEFAULT 0,
+  `managed_afk_timeout` BIGINT(18) NOT NULL DEFAULT 120,
   PRIMARY KEY (`guild_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
