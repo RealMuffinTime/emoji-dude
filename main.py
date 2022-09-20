@@ -8,12 +8,12 @@ from discord.ext import commands
 # TODO managed_afk permission check for not logging as error and move entirely to events
 # TODO remove reaction if multiple reactions by user on simple poll message
 
-# Version 2.0.0 ->
+# Version 2.0.1 ->
 #
 # New stuff
 #  -
 # Changes
-#  - added a check for running managed_channels
+#  -
 
 bot = None
 cogs = None
@@ -51,7 +51,7 @@ def get_prefix():
 def get_version():
     global version
     if version is None:
-        version = "2.0.0"
+        version = "2.0.1"
     return version
 
 
