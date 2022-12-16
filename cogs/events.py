@@ -162,7 +162,7 @@ class Events(commands.Cog):
     @commands.command(name='AutoReaction', description='the bot reacts to specific parts of message with emotes')
     async def auto_reaction_command(self, ctx):
         if isinstance(ctx, discord.Message):
-            if ctx.channel.permissions_for(ctx.guild.me).add_reactions:
+            if ctx.channel.permissions_for(ctx.guild.me).add_reactions and ctx.channel.permissions_for(ctx.guild.me).read_message_history:
                 for emoji in emojis:
                     if emoji[0] in ctx.content.upper():
                         for reaction in emoji[2]:
@@ -182,7 +182,7 @@ class Events(commands.Cog):
                 channel = guild.get_channel(channel_id)
                 message = await channel.fetch_message(message_id)
                 if webhook_id == 324631108731928587:
-                    if channel.permissions_for(guild.me).create_public_threads:
+                    if channel.permissions_for(guild.me).create_public_threads and channel.permissions_for(guild.me).read_message_history:
                         thread = await message.create_thread(
                             name=message.clean_content.replace("*", "").replace(":bar_chart: ", ""),
                             auto_archive_duration=1440)
