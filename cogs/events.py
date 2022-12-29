@@ -30,7 +30,7 @@ class Events(commands.Cog):
             await self.auto_poll_thread_creation_command(data)
         except Exception:
             trace = traceback.format_exc().rstrip("\n").split("\n")
-            utils.on_error("on_voice_state_update()", *trace)
+            utils.on_error("on_raw_message_edit()", *trace)
 
     @commands.Cog.listener()
     async def on_voice_state_update(self, member, before, after):
@@ -81,6 +81,7 @@ class Events(commands.Cog):
                             empty_channels.remove(lowest_channel[0])
                             for channel in empty_channels:
                                 if channel.permissions_for(channel.guild.me).manage_channels:
+                                    utils.log("info", "Delete: " + channel.name + " " + str(channel.id))
                                     await channel.delete()
                         else:
                             highest_channel = None
@@ -95,6 +96,7 @@ class Events(commands.Cog):
                             channel = highest_channel[0]
                             if channel.permissions_for(channel.guild.me).manage_channels:
                                 new_channel = await guild.create_voice_channel(name=keyword + " " + str(highest_channel[-1] + 1), category=channel.category)
+                                utils.log("info", "Create: " + new_channel.name + " " + str(new_channel.id))
                                 await new_channel.move(after=channel)
 
                     await utils.execute_sql(f"UPDATE set_guilds SET managed_channel_running = 0 WHERE guild_id ='{str(guild.id)}'", False)

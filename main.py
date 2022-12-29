@@ -115,9 +115,9 @@ async def update_guild_count():
 @get_bot().event
 async def on_ready():
     utils.get_start_timestamp()
-    utils.log("info", "Logged in as %s." % str(get_bot().user))
+    utils.log("info", f"Logged in as {str(get_bot().user)}, on version {get_version()}.")
     for guild in get_bot().guilds:
-        utils.log("info", " - %s (%s)" % (guild.name, guild.id))
+        utils.log("info", f" - {guild.name} ({guild.id})")
         await get_bot().get_cog("Events").managed_channel_command(guild)
     await get_bot().change_presence(
         activity=discord.Streaming(
