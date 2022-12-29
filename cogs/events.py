@@ -156,6 +156,7 @@ class Events(commands.Cog):
                         if member_status[0][0] == 1:
                             last_channel = guild.get_channel(member_status[0][2])
                             if last_channel is not None:
+                                if guild.afk_channel.permissions_for(guild.me).move_members and last_channel.permissions_for(guild.me).move_members:
                                     await member.move_to(last_channel)
             except Exception:
                 trace = traceback.format_exc().rstrip("\n").split("\n")

@@ -5,7 +5,7 @@ import traceback
 import utils
 from discord.ext import commands
 
-# TODO managed_afk permission check for not logging as error and move entirely to events
+# TODO managed_afk move entirely to events
 # TODO remove reaction if multiple reactions by user on simple poll message
 
 # Version 2.0.1 ->
@@ -13,7 +13,7 @@ from discord.ext import commands
 # New stuff
 #  -
 # Changes
-#  -
+#  - managed_afk add permission check
 
 bot = None
 cogs = None
@@ -78,11 +78,12 @@ async def check_afk():
             elif member.voice.self_deaf is True and not member.voice.self_stream and not member.voice.self_video:
                 last_channel = member.voice.channel
                 try:
-                    await member.move_to(last_guild.afk_channel)
-                    await utils.execute_sql(
-                        f"INSERT INTO set_users VALUES ('{member.id}', 0, 1, '{afk_member[1]}', '{last_channel.id}', '{last_guild.id}') "
-                        f"ON DUPLICATE KEY UPDATE afk_managed = 1, last_seen = '{afk_member[1]}', last_channel = '{last_channel.id}', last_guild = '{last_guild.id}'",
-                        False)
+                    if last_guild.afk_channel.permissions_for(last_guild.me).move_members and last_channel.permissions_for(last_guild.me).move_members:
+                        await member.move_to(last_guild.afk_channel)
+                        await utils.execute_sql(
+                            f"INSERT INTO set_users VALUES ('{member.id}', 0, 1, '{afk_member[1]}', '{last_channel.id}', '{last_guild.id}') "
+                            f"ON DUPLICATE KEY UPDATE afk_managed = 1, last_seen = '{afk_member[1]}', last_channel = '{last_channel.id}', last_guild = '{last_guild.id}'",
+                            False)
                 except Exception:
                     trace = traceback.format_exc().rstrip("\n").split("\n")
                     utils.on_error("check_afk()", *trace)
