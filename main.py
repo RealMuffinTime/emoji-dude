@@ -117,9 +117,6 @@ async def update_guild_count():
 async def on_ready():
     utils.get_start_timestamp()
     utils.log("info", f"Logged in as {str(get_bot().user)}, on version {get_version()}.")
-    for guild in get_bot().guilds:
-        utils.log("info", f" - {guild.name} ({guild.id})")
-        await get_bot().get_cog("Events").managed_channel_command(guild)
     await get_bot().change_presence(
         activity=discord.Streaming(
             name="Happily this isn't shown, because then you would know, that this is a rick roll. :)",
@@ -127,7 +124,9 @@ async def on_ready():
             url="https://www.youtube.com/watch?v=dQw4w9WgXcQ",
             type=discord.ActivityType.streaming))
     for guild in get_bot().guilds:
-        await utils.execute_sql(f"INSERT IGNORE INTO set_guilds (guild_id) VALUES ('{guild.id}')", False)
+        utils.log("info", f" - {guild.name} {guild.id}")
+        await utils.execute_sql(f"INSERT IGNORE INTO set_guilds (guild_id, managed_channel) VALUES ('{guild.id}', NULL)", False)
+        await get_bot().get_cog("Events").managed_channel_command(guild)
     await update_guild_count()
     await cron()
 
