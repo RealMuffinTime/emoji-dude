@@ -23,11 +23,11 @@
 * `ed.emojis <emoji> <amount>`, as example: `ed.emojis poop 21`
 
 ### `ed.help`
-* Shows a help menu, there are currently two category's `commands`/`events`
+* Shows a help menu, there are currently two categorys `commands`/`events`
 * `ed.help <category>`, as example: `ed.help events`
 
 ### `ed.screenshare`
-* Sends a screenshare link for your VoiceChannel (Because of an Discord update this is no longer useful)
+* Sends a screenshare link for your VoiceChannel (Because of a Discord update this is no longer useful)
 
 ### `ed.settings`
 * The settings, not yet implemented
