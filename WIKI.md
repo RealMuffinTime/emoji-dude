@@ -17,7 +17,7 @@
 * Clears a specific amount of messages
 * `ed.clear <amount>`, as example: `ed.clear 69`
 
-### `ed.emojis `
+### `ed.emojis`
 * Sends many emojis, you can choose between 1-27 emotes
 * Supported emojis are lol/poop/cool
 * `ed.emojis <emoji> <amount>`, as example: `ed.emojis poop 21`

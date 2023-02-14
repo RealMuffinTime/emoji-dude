@@ -4,7 +4,6 @@ import traceback
 import utils
 from discord.ext import commands
 
-
 emojis = [["LOL", "lollipop", ["🍭"]], ["POOP", "poop", ["💩"]], ["COOL", "cool", ["🇨", "🇴", "🅾", "🇱"]]]
 
 
