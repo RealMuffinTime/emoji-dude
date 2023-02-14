@@ -78,7 +78,7 @@ async def check_afk():
             elif member.voice.self_deaf is True and not member.voice.self_stream and not member.voice.self_video:
                 last_channel = member.voice.channel
                 try:
-                    if last_guild.afk_channel.permissions_for(last_guild.me).move_members and last_channel.permissions_for(last_guild.me).move_members:
+                    if last_guild.afk_channel is not None and last_guild.afk_channel.permissions_for(last_guild.me).move_members and last_channel.permissions_for(last_guild.me).move_members:
                         await member.move_to(last_guild.afk_channel)
                         await utils.execute_sql(
                             f"INSERT INTO set_users VALUES ('{member.id}', 0, 1, '{afk_member[1]}', '{last_channel.id}', '{last_guild.id}') "
