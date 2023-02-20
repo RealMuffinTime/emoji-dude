@@ -85,31 +85,32 @@ class Commands(commands.Cog):
                     inline=False
                 )
 
-                names = await utils.execute_sql(f"DESCRIBE set_guilds", True)
-                values = await utils.execute_sql(f"SELECT * FROM set_guilds WHERE guild_id = '{ctx.guild.id}'", True)
+                if ctx.guild is not None:
+                    names = await utils.execute_sql(f"DESCRIBE set_guilds", True)
+                    values = await utils.execute_sql(f"SELECT * FROM set_guilds WHERE guild_id = '{ctx.guild.id}'", True)
 
-                command_name = command.callback.__name__.replace("_command", "")
+                    command_name = command.callback.__name__.replace("_command", "")
 
-                settings = ""
-                i = 0
-                while i < len(values[0]):
-                    if names[i][0].startswith(command_name) and not names[i][0].endswith("running"):
-                        settings += f'**{names[i][0][1 + len(command_name):].replace("_", " ").title()}:** `{values[0][i]}`\n'
-                    i += 1
+                    settings = ""
+                    i = 0
+                    while i < len(values[0]):
+                        if names[i][0].startswith(command_name) and not names[i][0].endswith("running"):
+                            settings += f'**{names[i][0][1 + len(command_name):].replace("_", " ").title()}:** `{values[0][i]}`\n'
+                        i += 1
 
-                if settings == "":
-                    settings = "*There are no changeable settings regarding this command.*\n"
+                    if settings == "":
+                        settings = "*There are no changeable settings regarding this command.*\n"
 
-                if ctx.author.guild_permissions.administrator is True or ctx.author.guild_permissions.manage_guild is True:
-                    admin = "*You are an admin, you can change these settings.*"
-                else:
-                    admin = "*If you would be an admin, you could change settings here.\nHAHA, but you are NOT.*"
+                    if ctx.author.guild_permissions.administrator is True or ctx.author.guild_permissions.manage_guild is True:
+                        admin = "*You are an admin, you can change these settings.*"
+                    else:
+                        admin = "*If you would be an admin, you could change settings here.\nHAHA, but you are NOT.*"
 
-                embed.add_field(
-                    name="\u200b\nSettings",
-                    value=settings + admin,
-                    inline=False
-                )
+                    embed.add_field(
+                        name="\u200b\nSettings",
+                        value=settings + admin,
+                        inline=False
+                    )
 
             else:
                 await ctx.send("**Help Command**\nInvalid category or command specified.", delete_after=10)
