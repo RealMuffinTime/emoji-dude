@@ -13,12 +13,8 @@ class Commands(commands.Cog):
         self.bot = bot
 
     @commands.command(name='help', description='The help command!', aliases=['commands', 'command', 'start'], usage='<category>')
-    async def help_command(self, ctx, cog='all'):
+    async def help_command(self, ctx, parameter=None):
         try:
-            # The third parameter comes into play when
-            # only one word argument has to be passed by the user
-
-            # Prepare the embed
             if str(ctx.channel.type) == "private":
                 color = discord.Colour.random()
             else:
@@ -29,69 +25,51 @@ class Commands(commands.Cog):
 
             embed = discord.Embed(color=color)
 
-            # Get a list of all cogs
+            embed.title = f"Help page of {self.bot.user}"
+
+            help_object = self.bot.get_command("help")
+            embed.description = f"Help command syntax: `{ctx.prefix}{help_object.name} {help_object.usage if help_object.usage is not None else ''}`"
+
             cogs = [c for c in self.bot.cogs.keys()]
+            lower_cogs = [c.lower() for c in cogs]
 
-            # If cog is not specified by the user, we list all cogs and commands
-
-            if cog == 'all':
-
-                embed.title = f"Help page of {self.bot.user}"
+            if parameter is None:
 
                 for cog in cogs:
-                    # Get a list of all commands under each cog
 
                     cog_commands = self.bot.get_cog(cog).get_commands()
                     commands_list = ''
                     for command in cog_commands:
                         commands_list += f'**{command.name}** - *{command.description}*\n'
 
-                    # Add the cog's details to the embed.
-
                     embed.add_field(
-                        name=cog,
+                        name="\u200b\n" + cog,
                         value=commands_list,
                         inline=False
-                    ).add_field(
-                        name='\u200b', value='\u200b', inline=False
                     )
 
+            elif parameter.lower() in lower_cogs:
+
+                cog_object = self.bot.get_cog(cogs[lower_cogs.index(parameter.lower())])
+                embed.title += f" - Category {parameter.title()}"
+                commands_list = cog_object.get_commands()
+
+                for command in commands_list:
+
+                    description = f"Description: {command.description}\n"
+
+                    aliases = f"Aliases: `{', '.join(command.aliases)}`\n"
+
+                    syntax = f"Syntax: `{ctx.prefix}{command.name}{' ' + command.usage if command.usage is not None else ''}`"
+
+                    embed.add_field(
+                        name="\u200b\n" + command.name,
+                        value=description + (aliases if len(command.aliases) > 0 else '') + syntax,
+                        inline=False
+                    )
             else:
-
-                # If the cog was specified
-
-                lower_cogs = [c.lower() for c in cogs]
-
-                # If the cog actually exists.
-                if cog.lower() in lower_cogs:
-
-                    # Get a list of all commands in the specified cog
-                    cog_object = self.bot.get_cog(cogs[lower_cogs.index(cog.lower())])
-                    embed.title = f"Help page for {cog.title()}"
-                    commands_list = cog_object.get_commands()
-                    help_text = ''
-
-                    # Add details of each command to the help text
-                    # Command Name
-                    # Description
-                    # [Aliases]
-                    #
-                    # Format
-                    for command in commands_list:
-                        help_text += f'**{command.name}**\n Description: {command.description}\n'
-
-                        # Also add aliases, if there are any
-                        if len(command.aliases) > 0:
-                            help_text += f"Aliases: `{', '.join(command.aliases)}`\n"
-
-                        # Finally the format
-                        help_text += f'Format: `{ctx.prefix}{command.name} {command.usage if command.usage is not None else ""}`\n\n'
-
-                    embed.description = help_text
-                else:
-                    # Notify the user of invalid cog and finish the command
-                    await ctx.send("**Help Command**\nInvalid cog specified.\nUse `help` command to list all cogs.", delete_after=20)
-                    return
+                await ctx.send("**Help Command**\nInvalid cog specified.", delete_after=10)
+                return
 
             await ctx.send(embed=embed)
         except Exception:
