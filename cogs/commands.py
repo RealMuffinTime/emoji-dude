@@ -80,8 +80,35 @@ class Commands(commands.Cog):
                 syntax = f"Syntax: `{ctx.prefix}{command.name}{' ' + command.usage if command.usage is not None else ''}`"
 
                 embed.add_field(
-                    name="Details",
+                    name="\u200b\nDetails",
                     value=description + (aliases if len(command.aliases) > 0 else '') + syntax,
+                    inline=False
+                )
+
+                names = await utils.execute_sql(f"DESCRIBE set_guilds", True)
+                values = await utils.execute_sql(f"SELECT * FROM set_guilds WHERE guild_id = '{ctx.guild.id}'", True)
+
+                command_name = command.callback.__name__.replace("_command", "")
+                print(command_name)
+
+                settings = ""
+                i = 0
+                while i < len(values[0]):
+                    if names[i][0].startswith(command_name) and not names[i][0].endswith("running"):
+                        settings += f'**{names[i][0][1 + len(command_name):].replace("_", " ").title()}:** `{values[0][i]}`\n'
+                    i += 1
+
+                if settings == "":
+                    settings = "*There are no changeable settings regarding this command.*\n"
+
+                if ctx.author.guild_permissions.administrator is True or ctx.author.guild_permissions.manage_guild is True:
+                    admin = "*You are an admin, you can change these settings.*"
+                else:
+                    admin = "*If you would be an admin, you could change settings here.\nHAHA, but you are NOT.*"
+
+                embed.add_field(
+                    name="\u200b\nSettings",
+                    value=settings + admin,
                     inline=False
                 )
 
@@ -115,7 +142,7 @@ class Commands(commands.Cog):
             utils.on_error("ping_command()", *trace)
 
     @commands.command(name='backupchannel', aliases=['bc'], description='can be used to back up channel to another one')
-    async def backupchannel_command(self, ctx):
+    async def backup_channel_command(self, ctx):
         try:
             if ctx.author.id == 412235309204635649:
                 content = ctx.message.content.split(" ")
@@ -147,7 +174,7 @@ class Commands(commands.Cog):
                 await ctx.send("**BackupChannel**\nNo permission to use this command.")
         except Exception:
             trace = traceback.format_exc().rstrip("\n").split("\n")
-            utils.on_error("backupchannel_command()", *trace)
+            utils.on_error("backup_channel_command()", *trace)
 
     @commands.command(name='screenshare', aliases=['ss'], description='can be used to share your screen in voice channels')
     async def screenshare_command(self, ctx):

@@ -11,7 +11,7 @@ from discord.ext import commands
 # Version 2.0.1 ->
 #
 # New stuff
-#  -
+#  - Settings, settings got integrated into the help command
 # Changes
 #  - managed_afk add permission check
 
