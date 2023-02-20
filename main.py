@@ -11,9 +11,11 @@ from discord.ext import commands
 # Version 2.0.1 ->
 #
 # New stuff
-#  - Settings, settings got integrated into the help command
+#  - Settings are now available, settings got integrated into the help command
+#  - The help command shows now also info to specific commands, there are also the settings located
 # Changes
-#  - managed_afk add permission check
+#  - The help command got UI improvements
+#  - `managed_afk` add permission check
 
 bot = None
 cogs = None

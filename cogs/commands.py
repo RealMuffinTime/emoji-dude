@@ -89,7 +89,6 @@ class Commands(commands.Cog):
                 values = await utils.execute_sql(f"SELECT * FROM set_guilds WHERE guild_id = '{ctx.guild.id}'", True)
 
                 command_name = command.callback.__name__.replace("_command", "")
-                print(command_name)
 
                 settings = ""
                 i = 0
