@@ -12,7 +12,7 @@ class Commands(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
-    @commands.command(name='help', description='The help command!', aliases=['commands', 'command', 'start'], usage='<category>')
+    @commands.command(name='help', description='The help command!', aliases=['commands', 'command'], usage='<category/command>')
     async def help_command(self, ctx, parameter=None):
         try:
             if str(ctx.channel.type) == "private":
@@ -33,12 +33,14 @@ class Commands(commands.Cog):
             cogs = [c for c in self.bot.cogs.keys()]
             lower_cogs = [c.lower() for c in cogs]
 
+            commands = [c.name for c in self.bot.commands]
+            lower_commands = [c.lower() for c in commands]
+
             if parameter is None:
-
                 for cog in cogs:
-
                     cog_commands = self.bot.get_cog(cog).get_commands()
                     commands_list = ''
+
                     for command in cog_commands:
                         commands_list += f'**{command.name}** - *{command.description}*\n'
 
@@ -49,10 +51,9 @@ class Commands(commands.Cog):
                     )
 
             elif parameter.lower() in lower_cogs:
-
-                cog_object = self.bot.get_cog(cogs[lower_cogs.index(parameter.lower())])
-                embed.title += f" - Category {parameter.title()}"
-                commands_list = cog_object.get_commands()
+                cog = self.bot.get_cog(cogs[lower_cogs.index(parameter.lower())])
+                embed.title += f" - Category {cog.qualified_name}"
+                commands_list = cog.get_commands()
 
                 for command in commands_list:
 
@@ -67,8 +68,25 @@ class Commands(commands.Cog):
                         value=description + (aliases if len(command.aliases) > 0 else '') + syntax,
                         inline=False
                     )
+
+            elif parameter.lower() in lower_commands:
+                command = self.bot.get_command(commands[lower_commands.index(parameter.lower())])
+                embed.title += f" - Command {command.name}"
+
+                description = f"Description: {command.description}\n"
+
+                aliases = f"Aliases: `{', '.join(command.aliases)}`\n"
+
+                syntax = f"Syntax: `{ctx.prefix}{command.name}{' ' + command.usage if command.usage is not None else ''}`"
+
+                embed.add_field(
+                    name="Details",
+                    value=description + (aliases if len(command.aliases) > 0 else '') + syntax,
+                    inline=False
+                )
+
             else:
-                await ctx.send("**Help Command**\nInvalid cog specified.", delete_after=10)
+                await ctx.send("**Help Command**\nInvalid category or command specified.", delete_after=10)
                 return
 
             await ctx.send(embed=embed)
