@@ -57,7 +57,7 @@ class Events(commands.Cog):
                     await utils.execute_sql(f"UPDATE set_guilds SET managed_channel_running = 1 WHERE guild_id ='{str(guild.id)}'", False)
 
                     keyword = None
-                    keyword = (await utils.execute_sql(f"SELECT managed_channel FROM set_guilds WHERE guild_id ='{str(guild.id)}'", True))[0][0]
+                    keyword = (await utils.execute_sql(f"SELECT managed_channel_channel FROM set_guilds WHERE guild_id ='{str(guild.id)}'", True))[0][0]
                     if keyword:
                         empty_channels = []
                         used_channels = []
@@ -195,13 +195,13 @@ class Events(commands.Cog):
 
     @commands.Cog.listener()
     async def on_guild_join(self, guild):
-        await utils.execute_sql(f"INSERT INTO set_guilds VALUES ('{guild.id}', NULL, 0, 120) ON DUPLICATE KEY UPDATE managed_channel = NULL", False)
+        await utils.execute_sql(f"INSERT INTO set_guilds VALUES ('{guild.id}', NULL, 0, 120) ON DUPLICATE KEY UPDATE managed_channel_channel = NULL", False)
         await utils.execute_sql("INSERT INTO stat_bot_guilds (action) VALUES ('add');", False)
         utils.log("info", f"Guild join {str(guild.id)}.")
 
     @commands.Cog.listener()
     async def on_guild_remove(self, guild):
-        await utils.execute_sql(f"UPDATE set_guilds SET managed_channel = NULL WHERE guild_id = '{guild.id}';", False)
+        await utils.execute_sql(f"UPDATE set_guilds SET managed_channel_channel = NULL WHERE guild_id = '{guild.id}';", False)
         await utils.execute_sql("INSERT INTO stat_bot_guilds (action) VALUES ('remove');", False)
         utils.log("info", f"Guild leave {str(guild.id)}.")
 
