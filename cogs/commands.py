@@ -23,17 +23,11 @@ class Commands(commands.Cog):
                 color = discord.Colour.random()
             else:
                 if ctx.channel.permissions_for(ctx.author.guild.me).embed_links is False:
-                    await ctx.send(channel=ctx.channel, author=ctx.author,
-                                   message="Can't answer:\nI don't have permission to embed links.", delete=10)
+                    await ctx.send(content="**Help Command**\nI don't have permission to embed links.", delete_after=10)
                     return
                 color = ctx.channel.guild.me.color.value
 
-            help_embed = discord.Embed(color=color)
-
-            help_embed.set_footer(
-                text=f'Requested by {ctx.message.author.name}',
-                icon_url=ctx.message.author.avatar
-            )
+            embed = discord.Embed(color=color)
 
             # Get a list of all cogs
             cogs = [c for c in self.bot.cogs.keys()]
@@ -42,7 +36,7 @@ class Commands(commands.Cog):
 
             if cog == 'all':
 
-                help_embed.title = f"Help page of {self.bot.user}"
+                embed.title = f"Help page of {self.bot.user}"
 
                 for cog in cogs:
                     # Get a list of all commands under each cog
@@ -54,7 +48,7 @@ class Commands(commands.Cog):
 
                     # Add the cog's details to the embed.
 
-                    help_embed.add_field(
+                    embed.add_field(
                         name=cog,
                         value=commands_list,
                         inline=False
@@ -62,8 +56,6 @@ class Commands(commands.Cog):
                         name='\u200b', value='\u200b', inline=False
                     )
 
-                    # Also added a blank field '\u200b' is a whitespace character.
-                pass
             else:
 
                 # If the cog was specified
@@ -75,7 +67,7 @@ class Commands(commands.Cog):
 
                     # Get a list of all commands in the specified cog
                     cog_object = self.bot.get_cog(cogs[lower_cogs.index(cog.lower())])
-                    help_embed.title = f"Help page for {cog.title()}"
+                    embed.title = f"Help page for {cog.title()}"
                     commands_list = cog_object.get_commands()
                     help_text = ''
 
@@ -95,13 +87,13 @@ class Commands(commands.Cog):
                         # Finally the format
                         help_text += f'Format: `{ctx.prefix}{command.name} {command.usage if command.usage is not None else ""}`\n\n'
 
-                    help_embed.description = help_text
+                    embed.description = help_text
                 else:
                     # Notify the user of invalid cog and finish the command
-                    await ctx.send('Invalid cog specified.\nUse `help` command to list all cogs.')
+                    await ctx.send("**Help Command**\nInvalid cog specified.\nUse `help` command to list all cogs.", delete_after=20)
                     return
 
-            await ctx.send(embed=help_embed)
+            await ctx.send(embed=embed)
         except Exception:
             trace = traceback.format_exc().rstrip("\n").split("\n")
             utils.on_error("help_command()", *trace)
