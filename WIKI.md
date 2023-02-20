@@ -23,10 +23,9 @@
 * `ed.emojis <emoji> <amount>`, as example: `ed.emojis poop 21`
 
 ### `ed.help`
-* Shows a help menu, there are currently two categorys `commands`/`events`
-* `ed.help <category>`, as example: `ed.help events`
-* Admins of guilds can also use this to update settings regarding commands
-* `ed.help <command>`, as example: `ed.help AutoReaction`
+* `ed.help`, shows a help menu with categorys and their commands
+* `ed.help <category>`, as example: `ed.help events`, there are currently two categorys `commands`/`events`
+* `ed.help <command>`, as example: `ed.help AutoReaction`, when used by admins, they can update command specific settings
 
 ### `ed.screenshare`
 * Sends a screenshare link for your VoiceChannel (Because of a Discord update this is no longer useful)
