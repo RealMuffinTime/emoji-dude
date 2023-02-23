@@ -7,14 +7,17 @@ from discord.ext import commands
 
 # TODO managed_afk move entirely to events
 # TODO remove reaction if multiple reactions by user on simple poll message
+# TODO good counting feature
 
 # Version 2.0.1 ->
 #
 # New stuff
 #  - Settings are now available, settings got integrated into the help command
 #  - The help command shows now also info to specific commands, there are also the settings located
+#  - Features can be enabled/disabled
 # Changes
 #  - The help command got UI improvements
+#  - screenshare command got also UI improvements
 #  - `managed_afk` add permission check
 
 bot = None
