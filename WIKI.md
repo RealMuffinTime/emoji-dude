@@ -36,6 +36,13 @@ Every feature can be enabled/disabled. All Commands are enabled and all Events a
 
 ## Events
 
+### AutoPollThreadCreation
+* Automatically creates a thread, when the Simple Poll#9879 Bot creates new polls.
+
+### AutoReaction
+* The bot reacts to specific parts in a message with emotes
+* Supported phrases are lol/poop/cool
+
 ### ManagedAFK
 * Auto moves full muted users after specific amount of time to the guild set AFK channel
 * The last used channel is saved, so when a user is no longer full mute, he will be automatically moved to his last VoiceChannel
@@ -46,6 +53,3 @@ Every feature can be enabled/disabled. All Commands are enabled and all Events a
 * Automatically creates VoiceChannels when needed
 * (Currently, it's not possible to activate this yourself, contact if needed)
 
-### AutoReaction
-* The bot reacts to specific parts in a message with emotes
-* Supported phrases are lol/poop/cool
