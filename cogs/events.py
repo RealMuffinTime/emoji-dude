@@ -50,56 +50,57 @@ class Events(commands.Cog):
     @commands.command(name='ManagedChannel', description='the bot creates and removes voice channels when needed')
     async def managed_channel_command(self, guild):
         if isinstance(guild, discord.guild.Guild):
-            data = await utils.execute_sql(f"SELECT managed_channel FROM set_guilds WHERE guild_id ='{guild.id}'", True)
+            data = await utils.execute_sql(f"SELECT managed_channel, managed_channel_channel, managed_channel_running FROM set_guilds WHERE guild_id ='{guild.id}'", True)
             if data[0][0]:
                 try:
-                    managed_channel_running = (await utils.execute_sql(f"SELECT managed_channel_running FROM set_guilds WHERE guild_id ='{str(guild.id)}'", True))[0][0]
-                    if managed_channel_running == 0:
-
+                    if data[0][2] == 0:
                         await utils.execute_sql(f"UPDATE set_guilds SET managed_channel_running = 1 WHERE guild_id ='{str(guild.id)}'", False)
 
-                        keyword = None
-                        keyword = (await utils.execute_sql(f"SELECT managed_channel_channel FROM set_guilds WHERE guild_id ='{str(guild.id)}'", True))[0][0]
-                        if keyword:
-                            empty_channels = []
-                            used_channels = []
-                            for channel in guild.voice_channels:
-                                if channel.name.startswith(keyword):
-                                    if len(channel.voice_states.keys()) == 0:
-                                        empty_channels.append(channel)
-                                    else:
-                                        used_channels.append(channel)
+                        reset_channel = False
+                        if guild.get_channel(data[0][1]) is not None:
+                            key_channel = guild.get_channel(data[0][1]).name.split(" ")
+                            key_channel.pop(-1)
+                            keyword = " ".join(key_channel)
 
-                            if empty_channels:
-                                lowest_channel = None
-                                for channel in empty_channels:
-                                    pair = channel.name.split(" ")
-                                    pair[0] = channel
-                                    pair[-1] = int(pair[-1])
-                                    if lowest_channel is None:
-                                        lowest_channel = pair
-                                    elif pair[-1] < lowest_channel[-1]:
-                                        lowest_channel = pair
-                                empty_channels.remove(lowest_channel[0])
-                                for channel in empty_channels:
+                            if keyword:
+                                empty_channels = []
+                                used_channels = []
+                                for channel in guild.voice_channels:
+                                    if channel.name.startswith(keyword):
+                                        if len(channel.voice_states.keys()) == 0:
+                                            empty_channels.append(channel)
+                                        else:
+                                            used_channels.append(channel)
+
+                                if empty_channels:
+                                    lowest_channel = None
+                                    for channel in empty_channels:
+                                        pair = [channel, int(channel.name.split(" ")[-1])]
+                                        if lowest_channel is None or pair[1] < lowest_channel[1]:
+                                            lowest_channel = pair
+                                    empty_channels.remove(lowest_channel[0])
+                                    for channel in empty_channels:
+                                        if channel.permissions_for(channel.guild.me).manage_channels:
+                                            utils.log("info", "Delete: " + channel.name + " " + str(channel.id))
+                                            await channel.delete()
+                                else:
+                                    highest_channel = None
+                                    for channel in used_channels:
+                                        pair = [channel, int(channel.name.split(" ")[-1])]
+                                        if highest_channel is None or pair[1] > highest_channel[1]:
+                                            highest_channel = pair
+                                    channel = highest_channel[0]
                                     if channel.permissions_for(channel.guild.me).manage_channels:
-                                        utils.log("info", "Delete: " + channel.name + " " + str(channel.id))
-                                        await channel.delete()
+                                        new_channel = await guild.create_voice_channel(name=keyword + " " + str(highest_channel[1] + 1), category=channel.category)
+                                        await new_channel.move(after=channel)
+                                        utils.log("info", "Create: " + new_channel.name + " " + str(new_channel.id))
                             else:
-                                highest_channel = None
-                                for channel in used_channels:
-                                    pair = channel.name.split(" ")
-                                    pair[0] = channel
-                                    pair[-1] = int(pair[-1])
-                                    if highest_channel is None:
-                                        highest_channel = pair
-                                    elif pair[-1] > highest_channel[-1]:
-                                        highest_channel = pair
-                                channel = highest_channel[0]
-                                if channel.permissions_for(channel.guild.me).manage_channels:
-                                    new_channel = await guild.create_voice_channel(name=keyword + " " + str(highest_channel[-1] + 1), category=channel.category)
-                                    utils.log("info", "Create: " + new_channel.name + " " + str(new_channel.id))
-                                    await new_channel.move(after=channel)
+                                reset_channel = True
+                        else:
+                            reset_channel = True
+
+                        if reset_channel:
+                            await utils.execute_sql(f"UPDATE set_guilds SET managed_channel_channel = NULL WHERE guild_id ='{str(guild.id)}'", False)
 
                         await utils.execute_sql(f"UPDATE set_guilds SET managed_channel_running = 0 WHERE guild_id ='{str(guild.id)}'", False)
 
@@ -203,13 +204,12 @@ class Events(commands.Cog):
 
     @commands.Cog.listener()
     async def on_guild_join(self, guild):
-        await utils.execute_sql(f"INSERT INTO set_guilds VALUES ('{guild.id}', NULL, 0, 120) ON DUPLICATE KEY UPDATE managed_channel_channel = NULL", False)
+        await utils.execute_sql(f"INSERT IGNORE INTO set_guilds (guild_id) VALUES ('{guild.id}')", False)
         await utils.execute_sql("INSERT INTO stat_bot_guilds (action) VALUES ('add');", False)
         utils.log("info", f"Guild join {str(guild.id)}.")
 
     @commands.Cog.listener()
     async def on_guild_remove(self, guild):
-        await utils.execute_sql(f"UPDATE set_guilds SET managed_channel_channel = NULL WHERE guild_id = '{guild.id}';", False)
         await utils.execute_sql("INSERT INTO stat_bot_guilds (action) VALUES ('remove');", False)
         utils.log("info", f"Guild leave {str(guild.id)}.")
 

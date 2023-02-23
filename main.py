@@ -19,6 +19,7 @@ from discord.ext import commands
 #  - The help command got UI improvements
 #  - screenshare command got also UI improvements
 #  - `managed_afk` add permission check
+#  - internal changes to managed_channel
 
 bot = None
 cogs = None
@@ -132,7 +133,7 @@ async def on_ready():
             type=discord.ActivityType.streaming))
     for guild in get_bot().guilds:
         utils.log("info", f" - {guild.name} {guild.id}")
-        await utils.execute_sql(f"INSERT IGNORE INTO set_guilds (guild_id, managed_channel_channel) VALUES ('{guild.id}', NULL)", False)
+        await utils.execute_sql(f"INSERT IGNORE INTO set_guilds (guild_id) VALUES ('{guild.id}')", False)
         await get_bot().get_cog("Events").managed_channel_command(guild)
     await update_guild_count()
     await cron()

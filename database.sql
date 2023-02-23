@@ -19,7 +19,7 @@ CREATE TABLE IF NOT EXISTS `set_guilds` (
   `managed_afk` tinyint(1) NOT NULL DEFAULT 0,
   `managed_afk_timeout` BIGINT(18) NOT NULL DEFAULT 120,
   `managed_channel` tinyint(1) NOT NULL DEFAULT 0,
-  `managed_channel_channel` varchar(50) DEFAULT '',
+  `managed_channel_channel` BIGINT(18) DEFAULT NULL,
   `managed_channel_running` tinyint(1) NOT NULL DEFAULT 0,
   `ping` tinyint(1) NOT NULL DEFAULT 1,
   `screenshare` tinyint(1) NOT NULL DEFAULT 0,
