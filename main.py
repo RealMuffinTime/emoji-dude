@@ -9,17 +9,12 @@ from discord.ext import commands
 # TODO remove reaction if multiple reactions by user on simple poll message
 # TODO good counting feature
 
-# Version 2.0.1 ->
+# Version 2.1.0 ->
 #
 # New stuff
-#  - Settings are now available, settings got integrated into the help command
-#  - The help command shows now also info to specific commands, there are also the settings located
-#  - Features can be enabled/disabled
+#  -
 # Changes
-#  - The help command got UI improvements
-#  - screenshare command got also UI improvements
-#  - `managed_afk` add permission check
-#  - internal changes to managed_channel
+#  -
 
 bot = None
 cogs = None
@@ -57,7 +52,7 @@ def get_prefix():
 def get_version():
     global version
     if version is None:
-        version = "2.0.1"
+        version = "2.1.0"
     return version
 
 
