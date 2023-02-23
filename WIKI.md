@@ -1,5 +1,7 @@
 # emoji dude
 
+Every feature can be enabled/disabled. All Commands are enabled and all Events are disabled by default.
+
 ## Commands
 
 ### `ed.ping`
@@ -26,9 +28,11 @@
 * `ed.help`, shows a help menu with categorys and their commands
 * `ed.help <category>`, as example: `ed.help events`, there are currently two categorys `commands`/`events`
 * `ed.help <command>`, as example: `ed.help AutoReaction`, when used by admins, they can update command specific settings
+* This command can not be deactivated.
 
 ### `ed.screenshare`
-* Sends a screenshare link for your VoiceChannel (Because of a Discord update this is no longer useful)
+* Sends a screenshare link for your VoiceChannel
+* This command is initially disabled (Because of a Discord update this is no longer useful)
 
 ## Events
 

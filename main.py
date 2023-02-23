@@ -71,24 +71,26 @@ async def check_afk():
                                           f"INNER JOIN set_guilds ON set_users.last_guild = set_guilds.guild_id "
                                           f"WHERE last_seen IS NOT NULL", True)
     for afk_member in afk_members:
-        if afk_member[4] == 0 and utils.get_curr_timestamp(True) - afk_member[1] >= datetime.timedelta(seconds=afk_member[3]):
-            last_guild = get_bot().get_guild(afk_member[2])
-            member = await last_guild.fetch_member(afk_member[0])
-            if member.voice is None:
-                await utils.execute_sql(f"INSERT INTO set_users VALUES ('{member.id}', 0, 0, NULL, NULL, NULL) "
-                                        f"ON DUPLICATE KEY UPDATE afk_managed = 0, last_seen = NULL, last_channel = NULL, last_guild = NULL", False)
-            elif member.voice.self_deaf is True and not member.voice.self_stream and not member.voice.self_video:
-                last_channel = member.voice.channel
-                try:
-                    if last_guild.afk_channel is not None and last_guild.afk_channel.permissions_for(last_guild.me).move_members and last_channel.permissions_for(last_guild.me).move_members:
-                        await member.move_to(last_guild.afk_channel)
-                        await utils.execute_sql(
-                            f"INSERT INTO set_users VALUES ('{member.id}', 0, 1, '{afk_member[1]}', '{last_channel.id}', '{last_guild.id}') "
-                            f"ON DUPLICATE KEY UPDATE afk_managed = 1, last_seen = '{afk_member[1]}', last_channel = '{last_channel.id}', last_guild = '{last_guild.id}'",
-                            False)
-                except Exception:
-                    trace = traceback.format_exc().rstrip("\n").split("\n")
-                    utils.on_error("check_afk()", *trace)
+        data = await utils.execute_sql(f"SELECT managed_afk FROM set_guilds WHERE guild_id ='{afk_member[2]}'", True)
+        if data[0][0]:
+            if afk_member[4] == 0 and utils.get_curr_timestamp(True) - afk_member[1] >= datetime.timedelta(seconds=afk_member[3]):
+                last_guild = get_bot().get_guild(afk_member[2])
+                member = await last_guild.fetch_member(afk_member[0])
+                if member.voice is None:
+                    await utils.execute_sql(f"INSERT INTO set_users VALUES ('{member.id}', 0, 0, NULL, NULL, NULL) "
+                                            f"ON DUPLICATE KEY UPDATE afk_managed = 0, last_seen = NULL, last_channel = NULL, last_guild = NULL", False)
+                elif member.voice.self_deaf is True and not member.voice.self_stream and not member.voice.self_video:
+                    last_channel = member.voice.channel
+                    try:
+                        if last_guild.afk_channel is not None and last_guild.afk_channel.permissions_for(last_guild.me).move_members and last_channel.permissions_for(last_guild.me).move_members:
+                            await member.move_to(last_guild.afk_channel)
+                            await utils.execute_sql(
+                                f"INSERT INTO set_users VALUES ('{member.id}', 0, 1, '{afk_member[1]}', '{last_channel.id}', '{last_guild.id}') "
+                                f"ON DUPLICATE KEY UPDATE afk_managed = 1, last_seen = '{afk_member[1]}', last_channel = '{last_channel.id}', last_guild = '{last_guild.id}'",
+                                False)
+                    except Exception:
+                        trace = traceback.format_exc().rstrip("\n").split("\n")
+                        utils.on_error("check_afk()", *trace)
 
 
 async def cron():

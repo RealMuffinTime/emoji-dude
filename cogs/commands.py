@@ -57,6 +57,13 @@ class Commands(commands.Cog):
 
                 for command in commands_list:
 
+                    command_name = command.callback.__name__.replace("_command", "")
+                    status = " - *Enabled*"
+                    if not command_name.startswith("help") and not command_name.startswith("sett"):
+                        enabled = await utils.execute_sql(f"SELECT {command_name} FROM set_guilds WHERE guild_id ='{ctx.guild.id}'", True)
+                        if not enabled[0][0]:
+                            status = " - *Disabled*"
+
                     description = f"Description: {command.description}\n"
 
                     aliases = f"Aliases: `{', '.join(command.aliases)}`\n"
@@ -64,13 +71,14 @@ class Commands(commands.Cog):
                     syntax = f"Syntax: `{ctx.prefix}{command.name}{' ' + command.usage if command.usage is not None else ''}`"
 
                     embed.add_field(
-                        name="\u200b\n" + command.name,
+                        name="\u200b\n" + command.name + status,
                         value=description + (aliases if len(command.aliases) > 0 else '') + syntax,
                         inline=False
                     )
 
             elif parameter.lower() in lower_commands:
                 command = self.bot.get_command(commands[lower_commands.index(parameter.lower())])
+
                 embed.title += f" - Command {command.name}"
 
                 description = f"Description: {command.description}\n"
@@ -95,7 +103,15 @@ class Commands(commands.Cog):
                     i = 0
                     while i < len(values[0]):
                         if names[i][0].startswith(command_name) and not names[i][0].endswith("running"):
-                            settings += f'**{names[i][0][1 + len(command_name):].replace("_", " ").title()}:** `{values[0][i]}`\n'
+                            name = names[i][0][1 + len(command_name):].replace("_", " ").title()
+                            value = values[0][i]
+                            if name == "":
+                                name = "Enabled"
+                                if value == 1:
+                                    value = "Yes"
+                                else:
+                                    value = "No"
+                            settings += f'**{name}:** `{value}`\n'
                         i += 1
 
                     if settings == "":
@@ -132,11 +148,13 @@ class Commands(commands.Cog):
     @commands.command(name='ping', description='some pongs')
     async def ping_command(self, ctx):
         try:
-            start = datetime.datetime.now()
-            msg = await ctx.send(content='**Ping?**')
-            await msg.edit(content=f'**Pong!**\n'
-                                   f'One Message round-trip took **{int((datetime.datetime.now() - start).microseconds / 1000)}ms**.\n'
-                                   f'Ping of the bot **{int(self.bot.latency * 1000)}ms**.')
+            data = await utils.execute_sql(f"SELECT ping FROM set_guilds WHERE guild_id ='{ctx.guild.id}'", True)
+            if data[0][0]:
+                start = datetime.datetime.now()
+                msg = await ctx.send(content='**Ping?**')
+                await msg.edit(content=f'**Pong!**\n'
+                                       f'One Message round-trip took **{int((datetime.datetime.now() - start).microseconds / 1000)}ms**.\n'
+                                       f'Ping of the bot **{int(self.bot.latency * 1000)}ms**.')
         except Exception:
             trace = traceback.format_exc().rstrip("\n").split("\n")
             utils.on_error("ping_command()", *trace)
@@ -144,34 +162,36 @@ class Commands(commands.Cog):
     @commands.command(name='backupchannel', aliases=['bc'], description='can be used to back up channel to another one')
     async def backup_channel_command(self, ctx):
         try:
-            if ctx.author.id == 412235309204635649:
-                content = ctx.message.content.split(" ")
-                if len(content) == 3:
-                    try:
-                        from_channel = discord.utils.get(ctx.guild.channels, id=int(content[1]))
-                        to_channel = discord.utils.get(ctx.guild.channels, id=int(content[2]))
-                    except Exception as e:
-                        await ctx.send("**BackupChannel**\nInvalid channels.")
+            data = await utils.execute_sql(f"SELECT backup_channel FROM set_guilds WHERE guild_id ='{ctx.guild.id}'", True)
+            if data[0][0]:
+                if ctx.author.id == 412235309204635649:
+                    content = ctx.message.content.split(" ")
+                    if len(content) == 3:
+                        try:
+                            from_channel = discord.utils.get(ctx.guild.channels, id=int(content[1]))
+                            to_channel = discord.utils.get(ctx.guild.channels, id=int(content[2]))
+                        except Exception as e:
+                            await ctx.send("**BackupChannel**\nInvalid channels.")
+                            return
+
+                        status_message = await ctx.send(f"**BackupChannel**\nBeginning backup from <#{from_channel.id}> to <#{to_channel.id}>.\nSearching for messages...")
+                        backup_messages = [message async for message in from_channel.history(limit=None, oldest_first=True)]
+
+                        await status_message.edit(content=f"**BackupChannel**\nBeginning backup of <#{from_channel.id}> to <#{to_channel.id}>.\nFound {len(backup_messages)} messages.")
+
+                        for message in backup_messages:
+                            timestamp = int(message.created_at.timestamp())
+                            if message.edited_at is not None:
+                                timestamp = int(message.edited_at.timestamp())
+
+                            allowed_mentions = discord.AllowedMentions().none()
+                            await to_channel.send(f"--- At <t:{timestamp}:f> wrote <@!{message.author.id}> ---", allowed_mentions=allowed_mentions)
+                            await to_channel.send(message.content, allowed_mentions=allowed_mentions)
+                    else:
+                        await ctx.send("**BackupChannel**\nInvalid input.")
                         return
-
-                    status_message = await ctx.send(f"**BackupChannel**\nBeginning backup from <#{from_channel.id}> to <#{to_channel.id}>.\nSearching for messages...")
-                    backup_messages = [message async for message in from_channel.history(limit=None, oldest_first=True)]
-
-                    await status_message.edit(content=f"**BackupChannel**\nBeginning backup of <#{from_channel.id}> to <#{to_channel.id}>.\nFound {len(backup_messages)} messages.")
-
-                    for message in backup_messages:
-                        timestamp = int(message.created_at.timestamp())
-                        if message.edited_at is not None:
-                            timestamp = int(message.edited_at.timestamp())
-
-                        allowed_mentions = discord.AllowedMentions().none()
-                        await to_channel.send(f"--- At <t:{timestamp}:f> wrote <@!{message.author.id}> ---", allowed_mentions=allowed_mentions)
-                        await to_channel.send(message.content, allowed_mentions=allowed_mentions)
                 else:
-                    await ctx.send("**BackupChannel**\nInvalid input.")
-                    return
-            else:
-                await ctx.send("**BackupChannel**\nNo permission to use this command.")
+                    await ctx.send("**BackupChannel**\nNo permission to use this command.")
         except Exception:
             trace = traceback.format_exc().rstrip("\n").split("\n")
             utils.on_error("backup_channel_command()", *trace)
@@ -179,19 +199,16 @@ class Commands(commands.Cog):
     @commands.command(name='screenshare', aliases=['ss'], description='can be used to share your screen in voice channels')
     async def screenshare_command(self, ctx):
         try:
-            user = ctx.author
-            if user.voice:
-                server_id = str(int(ctx.guild.id))
-                channel_id = str(int(user.voice.channel.id))
-                channel = str(user.voice.channel.name)
-                await ctx.send("**Screenshare**\n"
-                               f"If you want to share your screen in {channel}"
-                               ", use this link\n"
-                               f"> <https://discordapp.com/channels/{server_id}/{channel_id}/>\n"
-                               "Otherwise ignore this message")
-                return
-            else:
-                await ctx.send("**Screenshare**\nYou are not in a voice channel!")
+            data = await utils.execute_sql(f"SELECT screenshare FROM set_guilds WHERE guild_id ='{ctx.guild.id}'", True)
+            if data[0][0]:
+                if ctx.author.voice:
+                    channel = ctx.author.voice.channel
+                    await ctx.send("**Screenshare**\n"
+                                   f"If you want to share your screen in <#{channel.id}>, use this link:\n"
+                                   f"<https://discordapp.com/channels/{ctx.guild.id}/{channel.id}/>")
+                    return
+                else:
+                    await ctx.send("**Screenshare**\nYou are not in a voice channel!")
         except Exception:
             trace = traceback.format_exc().rstrip("\n").split("\n")
             utils.on_error("screenshare_command()", *trace)
@@ -199,21 +216,23 @@ class Commands(commands.Cog):
     @commands.command(name='clean', description='cleans all messages affecting this bot')
     async def clean_command(self, ctx):
         try:
-            message = await ctx.send(content='**CleanUp**\nDeleting...')
+            data = await utils.execute_sql(f"SELECT clean FROM set_guilds WHERE guild_id ='{ctx.guild.id}'", True)
+            if data[0][0]:
+                message = await ctx.send(content='**CleanUp**\nDeleting...')
 
-            def check(m):
-                if m == message:
-                    return False
-                elif m.content.startswith("ed."):
-                    return True
-                elif m.author == self.bot.user:
-                    return True
-                else:
-                    return False
+                def check(m):
+                    if m == message:
+                        return False
+                    elif m.content.startswith("ed."):
+                        return True
+                    elif m.author == self.bot.user:
+                        return True
+                    else:
+                        return False
 
-            deleted = await ctx.channel.purge(check=check)
+                deleted = await ctx.channel.purge(check=check)
 
-            await message.edit(content=f'**CleanUp**\nDeleted **{len(deleted) - 1}** message(s).', delete_after=5)
+                await message.edit(content=f'**CleanUp**\nDeleted **{len(deleted) - 1}** message(s).', delete_after=5)
         except Exception:
             trace = traceback.format_exc().rstrip("\n").split("\n")
             utils.on_error("clean_command()", *trace)
@@ -221,58 +240,62 @@ class Commands(commands.Cog):
     @commands.command(name='clear', description='clears messages', usage='<amount>')
     async def clear_command(self, ctx, amount):
         try:
-            try:
-                amount = int(amount)
-            except Exception:
-                await ctx.send(content='**ClearUp**\nIncorrect command usage.')
-                return
-            message = await ctx.send(content='**ClearUp**\nDeleting...')
+            data = await utils.execute_sql(f"SELECT clear FROM set_guilds WHERE guild_id ='{ctx.guild.id}'", True)
+            if data[0][0]:
+                try:
+                    amount = int(amount)
+                except Exception:
+                    await ctx.send(content='**ClearUp**\nIncorrect command usage.')
+                    return
+                message = await ctx.send(content='**ClearUp**\nDeleting...')
 
-            def is_clear_message(m):
-                if m == message:
-                    return False
-                return True
+                def is_clear_message(m):
+                    if m == message:
+                        return False
+                    return True
 
-            deleted = await ctx.channel.purge(limit=amount + 2, check=is_clear_message, bulk=True)
+                deleted = await ctx.channel.purge(limit=amount + 2, check=is_clear_message, bulk=True)
 
-            await message.edit(content=f'**ClearUp**\nDeleted **{len(deleted) - 1}** message(s).', delete_after=5)
+                await message.edit(content=f'**ClearUp**\nDeleted **{len(deleted) - 1}** message(s).', delete_after=5)
         except Exception:
             trace = traceback.format_exc().rstrip("\n").split("\n")
             utils.on_error("clear_command()", *trace)
 
     @commands.command(name='emojis', aliases=['e'], description='sends many emojis, cip cap 27', usage='<emoji> <amount>')
-    async def emojis_command(self, ctx):  # , emoji, amount
+    async def emojis_command(self, ctx):
         try:
-            if ctx.author.bot:
-                return
+            data = await utils.execute_sql(f"SELECT emojis FROM set_guilds WHERE guild_id ='{ctx.guild.id}'", True)
+            if data[0][0]:
+                if ctx.author.bot:
+                    return
 
-            msg = ctx.message.content
-            prefix = ctx.prefix
-            alias = ctx.invoked_with
-            text = msg[len(prefix) + len(alias) + 1:]
+                msg = ctx.message.content
+                prefix = ctx.prefix
+                alias = ctx.invoked_with
+                text = msg[len(prefix) + len(alias) + 1:]
 
-            if text == '':
-                await ctx.send(content='**Emojis**\nYou need to specify the emoji and the number of these.')
-            else:
-                parameters = text.split(" ")
-                if len(parameters) == 2:
-                    for emoji in emojis:
-                        if parameters[0].upper() in emoji[0]:
-                            index = 0
-                            send_text = ""
-                            warning = ""
-                            try:
-                                index = int(parameters[1])
-                            except Exception:
-                                await ctx.send('**Emojis**\nDid not find specified emoji.')
-                                return
-                            if index > 27:
-                                index = 27
-                                warning = f"**Emojis**\nUnfortunately, I only send 27 {emoji[1]}s :disappointed_relieved:."
-                            for i in range(index):
-                                send_text += ":" + emoji[1] + ":"
-                            if send_text + warning != "":
-                                await ctx.send(send_text + warning)
+                if text == '':
+                    await ctx.send(content='**Emojis**\nYou need to specify the emoji and the number of these.')
+                else:
+                    parameters = text.split(" ")
+                    if len(parameters) == 2:
+                        for emoji in emojis:
+                            if parameters[0].upper() in emoji[0]:
+                                index = 0
+                                send_text = ""
+                                warning = ""
+                                try:
+                                    index = int(parameters[1])
+                                except Exception:
+                                    await ctx.send('**Emojis**\nDid not find specified emoji.')
+                                    return
+                                if index > 27:
+                                    index = 27
+                                    warning = f"**Emojis**\nUnfortunately, I only send 27 {emoji[1]}s :disappointed_relieved:."
+                                for i in range(index):
+                                    send_text += ":" + emoji[1] + ":"
+                                if send_text + warning != "":
+                                    await ctx.send(send_text + warning)
         except Exception:
             trace = traceback.format_exc().rstrip("\n").split("\n")
             utils.on_error("emojis_command()", *trace)

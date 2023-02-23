@@ -10,9 +10,19 @@
 -- set_guilds
 CREATE TABLE IF NOT EXISTS `set_guilds` (
   `guild_id` bigint(18) NOT NULL,
+  `auto_reaction` tinyint(1) NOT NULL DEFAULT 0,
+  `auto_poll_thread_creation` tinyint(1) NOT NULL DEFAULT 0,
+  `backup_channel` tinyint(1) NOT NULL DEFAULT 1,
+  `clean` tinyint(1) NOT NULL DEFAULT 1,
+  `clear` tinyint(1) NOT NULL DEFAULT 1,
+  `emojis` tinyint(1) NOT NULL DEFAULT 1,
+  `managed_afk` tinyint(1) NOT NULL DEFAULT 0,
+  `managed_afk_timeout` BIGINT(18) NOT NULL DEFAULT 120,
+  `managed_channel` tinyint(1) NOT NULL DEFAULT 0,
   `managed_channel_channel` varchar(50) DEFAULT '',
   `managed_channel_running` tinyint(1) NOT NULL DEFAULT 0,
-  `managed_afk_timeout` BIGINT(18) NOT NULL DEFAULT 120,
+  `ping` tinyint(1) NOT NULL DEFAULT 1,
+  `screenshare` tinyint(1) NOT NULL DEFAULT 0,
   PRIMARY KEY (`guild_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
