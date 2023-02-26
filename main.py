@@ -7,14 +7,17 @@ from discord.ext import commands
 
 # TODO managed_afk move entirely to events
 # TODO remove reaction if multiple reactions by user on simple poll message
-# TODO good counting feature
+# TODO good counting feature, count 1 2 4 8 15 16 23 42
+# TODO add read message history permission check and optimize permission return
+# TODO delete messages until a given point, by message id or reply
+# TODO more emoji support
 
 # Version 2.1.0 ->
 #
 # New stuff
 #  -
 # Changes
-#  -
+#  - add permission check for clean and clear command
 
 bot = None
 cogs = None

@@ -19,7 +19,7 @@ class Commands(commands.Cog):
                 color = discord.Colour.random()
             else:
                 if ctx.channel.permissions_for(ctx.author.guild.me).embed_links is False:
-                    await ctx.send(content="**Help Command**\nI don't have permission to embed links.", delete_after=10)
+                    await ctx.send(content="**Help Command**\nI don't have permission to use embed messages.\nPlease provide the `Embed Links` permission.", delete_after=15)
                     return
                 color = ctx.channel.guild.me.color.value
 
@@ -191,7 +191,7 @@ class Commands(commands.Cog):
                         await ctx.send("**BackupChannel**\nInvalid input.")
                         return
                 else:
-                    await ctx.send("**BackupChannel**\nNo permission to use this command.")
+                    await ctx.send("**BackupChannel**\nYou have no permission to use this command.", delete_after=15)
         except Exception:
             trace = traceback.format_exc().rstrip("\n").split("\n")
             utils.on_error("backup_channel_command()", *trace)
@@ -218,21 +218,24 @@ class Commands(commands.Cog):
         try:
             data = await utils.execute_sql(f"SELECT clean FROM set_guilds WHERE guild_id ='{ctx.guild.id}'", True)
             if data[0][0]:
-                message = await ctx.send(content='**CleanUp**\nDeleting...')
+                if ctx.channel.permissions_for(ctx.guild.me).manage_messages and ctx.channel.permissions_for(ctx.guild.me).read_message_history is True:
+                    message = await ctx.send(content='**CleanUp**\nDeleting...')
 
-                def check(m):
-                    if m == message:
-                        return False
-                    elif m.content.startswith("ed."):
-                        return True
-                    elif m.author == self.bot.user:
-                        return True
-                    else:
-                        return False
+                    def check(m):
+                        if m == message:
+                            return False
+                        elif m.content.startswith("ed."):
+                            return True
+                        elif m.author == self.bot.user:
+                            return True
+                        else:
+                            return False
 
-                deleted = await ctx.channel.purge(check=check)
+                    deleted = await ctx.channel.purge(check=check)
 
-                await message.edit(content=f'**CleanUp**\nDeleted **{len(deleted) - 1}** message(s).', delete_after=5)
+                    await message.edit(content=f'**CleanUp**\nDeleted **{len(deleted) - 1}** message(s).', delete_after=5)
+                else:
+                    await ctx.send('**CleanUp**\nMissing permission to delete messages.\nPlease provide the `Manage Messages` and `Read Message History` permission.', delete_after=15)
         except Exception:
             trace = traceback.format_exc().rstrip("\n").split("\n")
             utils.on_error("clean_command()", *trace)
@@ -242,21 +245,24 @@ class Commands(commands.Cog):
         try:
             data = await utils.execute_sql(f"SELECT clear FROM set_guilds WHERE guild_id ='{ctx.guild.id}'", True)
             if data[0][0]:
-                try:
-                    amount = int(amount)
-                except Exception:
-                    await ctx.send(content='**ClearUp**\nIncorrect command usage.')
-                    return
-                message = await ctx.send(content='**ClearUp**\nDeleting...')
+                if ctx.channel.permissions_for(ctx.guild.me).manage_messages and ctx.channel.permissions_for(ctx.guild.me).read_message_history is True:
+                    try:
+                        amount = int(amount)
+                    except Exception:
+                        await ctx.send(content='**ClearUp**\nIncorrect command usage.')
+                        return
+                    message = await ctx.send(content='**ClearUp**\nDeleting...')
 
-                def is_clear_message(m):
-                    if m == message:
-                        return False
-                    return True
+                    def is_clear_message(m):
+                        if m == message:
+                            return False
+                        return True
 
-                deleted = await ctx.channel.purge(limit=amount + 2, check=is_clear_message, bulk=True)
+                    deleted = await ctx.channel.purge(limit=amount + 2, check=is_clear_message, bulk=True)
 
-                await message.edit(content=f'**ClearUp**\nDeleted **{len(deleted) - 1}** message(s).', delete_after=5)
+                    await message.edit(content=f'**ClearUp**\nDeleted **{len(deleted) - 1}** message(s).', delete_after=5)
+                else:
+                    await ctx.send('**ClearUp**\nMissing permission to delete messages.\nPlease provide the `Manage Messages` and `Read Message History` permission.', delete_after=15)
         except Exception:
             trace = traceback.format_exc().rstrip("\n").split("\n")
             utils.on_error("clear_command()", *trace)
