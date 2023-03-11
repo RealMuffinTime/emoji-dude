@@ -19,7 +19,7 @@ class Commands(commands.Cog):
                 color = discord.Colour.random()
             else:
                 if ctx.channel.permissions_for(ctx.author.guild.me).embed_links is False:
-                    await ctx.send(content="**Help Command**\nI don't have permission to use embed messages.\nPlease provide the `Embed Links` permission.", delete_after=15)
+                    await ctx.reply(content="**Help Command**\nI don't have permission to use embed messages.\nPlease provide the `Embed Links` permission.", delete_after=15, mention_author=False)
                     return
                 color = ctx.channel.guild.me.color.value
 
@@ -129,10 +129,10 @@ class Commands(commands.Cog):
                     )
 
             else:
-                await ctx.send("**Help Command**\nInvalid category or command specified.", delete_after=10)
+                await ctx.reply("**Help Command**\nInvalid category or command specified.", delete_after=10, mention_author=False)
                 return
 
-            await ctx.send(embed=embed)
+            await ctx.reply(embed=embed, mention_author=False)
         except Exception:
             trace = traceback.format_exc().rstrip("\n").split("\n")
             utils.on_error("help_command()", *trace)
@@ -151,7 +151,7 @@ class Commands(commands.Cog):
             data = await utils.execute_sql(f"SELECT ping FROM set_guilds WHERE guild_id ='{ctx.guild.id}'", True)
             if data[0][0]:
                 start = datetime.datetime.now()
-                msg = await ctx.send(content='**Ping?**')
+                msg = await ctx.reply(content='**Ping?**', mention_author=False)
                 await msg.edit(content=f'**Pong!**\n'
                                        f'One Message round-trip took **{int((datetime.datetime.now() - start).microseconds / 1000)}ms**.\n'
                                        f'Ping of the bot **{int(self.bot.latency * 1000)}ms**.')
@@ -171,10 +171,10 @@ class Commands(commands.Cog):
                             from_channel = discord.utils.get(ctx.guild.channels, id=int(content[1]))
                             to_channel = discord.utils.get(ctx.guild.channels, id=int(content[2]))
                         except Exception as e:
-                            await ctx.send("**BackupChannel**\nInvalid channels.")
+                            await ctx.reply("**BackupChannel**\nInvalid channels.", mention_author=False)
                             return
 
-                        status_message = await ctx.send(f"**BackupChannel**\nBeginning backup from <#{from_channel.id}> to <#{to_channel.id}>.\nSearching for messages...")
+                        status_message = await ctx.reply(f"**BackupChannel**\nBeginning backup from <#{from_channel.id}> to <#{to_channel.id}>.\nSearching for messages...", mention_author=False)
                         backup_messages = [message async for message in from_channel.history(limit=None, oldest_first=True)]
 
                         await status_message.edit(content=f"**BackupChannel**\nBeginning backup of <#{from_channel.id}> to <#{to_channel.id}>.\nFound {len(backup_messages)} messages.")
@@ -188,10 +188,10 @@ class Commands(commands.Cog):
                             await to_channel.send(f"--- At <t:{timestamp}:f> wrote <@!{message.author.id}> ---", allowed_mentions=allowed_mentions)
                             await to_channel.send(message.content, allowed_mentions=allowed_mentions)
                     else:
-                        await ctx.send("**BackupChannel**\nInvalid input.")
+                        await ctx.reply("**BackupChannel**\nInvalid input.", mention_author=False)
                         return
                 else:
-                    await ctx.send("**BackupChannel**\nYou have no permission to use this command.", delete_after=15)
+                    await ctx.reply("**BackupChannel**\nYou have no permission to use this command.", delete_after=15, mention_author=False)
         except Exception:
             trace = traceback.format_exc().rstrip("\n").split("\n")
             utils.on_error("backup_channel_command()", *trace)
@@ -203,12 +203,12 @@ class Commands(commands.Cog):
             if data[0][0]:
                 if ctx.author.voice:
                     channel = ctx.author.voice.channel
-                    await ctx.send("**Screenshare**\n"
-                                   f"If you want to share your screen in <#{channel.id}>, use this link:\n"
-                                   f"<https://discordapp.com/channels/{ctx.guild.id}/{channel.id}/>")
+                    await ctx.reply(f"**Screenshare**\n"
+                                    f"If you want to share your screen in <#{channel.id}>, use this link:\n"
+                                    f"<https://discordapp.com/channels/{ctx.guild.id}/{channel.id}/>", mention_author=False)
                     return
                 else:
-                    await ctx.send("**Screenshare**\nYou are not in a voice channel!")
+                    await ctx.reply("**Screenshare**\nYou are not in a voice channel!", mention_author=False)
         except Exception:
             trace = traceback.format_exc().rstrip("\n").split("\n")
             utils.on_error("screenshare_command()", *trace)
@@ -219,7 +219,7 @@ class Commands(commands.Cog):
             data = await utils.execute_sql(f"SELECT clean FROM set_guilds WHERE guild_id ='{ctx.guild.id}'", True)
             if data[0][0]:
                 if ctx.channel.permissions_for(ctx.guild.me).manage_messages and ctx.channel.permissions_for(ctx.guild.me).read_message_history is True:
-                    message = await ctx.send(content='**CleanUp**\nDeleting...')
+                    message = await ctx.reply(content='**CleanUp**\nDeleting...', mention_author=False)
 
                     def check(m):
                         if m == message:
@@ -235,7 +235,8 @@ class Commands(commands.Cog):
 
                     await message.edit(content=f'**CleanUp**\nDeleted **{len(deleted) - 1}** message(s).', delete_after=5)
                 else:
-                    await ctx.send('**CleanUp**\nMissing permission to delete messages.\nPlease provide the `Manage Messages` and `Read Message History` permission.', delete_after=15)
+                    await ctx.reply('**CleanUp**\nMissing permission to delete messages.\n'
+                                    'Please provide the `Manage Messages` and `Read Message History` permission.', delete_after=15, mention_author=False)
         except Exception:
             trace = traceback.format_exc().rstrip("\n").split("\n")
             utils.on_error("clean_command()", *trace)
@@ -249,7 +250,7 @@ class Commands(commands.Cog):
                     if ctx.message.reference is not None and ctx.message.reference.resolved is not None and type(
                             ctx.message.reference.resolved) == discord.Message:
                         amount = 0
-                        async for message in ctx.channel.history(limit=420):  # incrementing search to be added
+                        async for message in ctx.channel.history():  # incrementing search to be added
                             if message == ctx.message.reference.resolved:
                                 break
                             amount += 1
@@ -257,9 +258,9 @@ class Commands(commands.Cog):
                         try:
                             amount = int(amount)
                         except Exception:
-                            await ctx.send(content='**ClearUp**\nIncorrect command usage.')
+                            await ctx.reply(content='**ClearUp**\nIncorrect command usage.', mention_author=False)
                             return
-                    message = await ctx.send(content='**ClearUp**\nDeleting...')
+                    message = await ctx.reply(content='**ClearUp**\nDeleting...', mention_author=False)
 
                     def is_clear_message(m):
                         if m == message:
@@ -270,7 +271,8 @@ class Commands(commands.Cog):
 
                     await message.edit(content=f'**ClearUp**\nDeleted **{len(deleted) - 1}** message(s).', delete_after=5)
                 else:
-                    await ctx.send('**ClearUp**\nMissing permission to delete messages.\nPlease provide the `Manage Messages` and `Read Message History` permission.', delete_after=15)
+                    await ctx.reply('**ClearUp**\nMissing permission to delete messages.\n'
+                                    'Please provide the `Manage Messages` and `Read Message History` permission.', delete_after=15, mention_author=False)
         except Exception:
             trace = traceback.format_exc().rstrip("\n").split("\n")
             utils.on_error("clear_command()", *trace)
@@ -289,7 +291,7 @@ class Commands(commands.Cog):
                 text = msg[len(prefix) + len(alias) + 1:]
 
                 if text == '':
-                    await ctx.send(content='**Emojis**\nYou need to specify the emoji and the number of these.')
+                    await ctx.reply(content='**Emojis**\nYou need to specify the emoji and the number of these.', mention_author=False)
                 else:
                     parameters = text.split(" ")
                     if len(parameters) == 2:
@@ -301,7 +303,7 @@ class Commands(commands.Cog):
                                 try:
                                     index = int(parameters[1])
                                 except Exception:
-                                    await ctx.send('**Emojis**\nDid not find specified emoji.')
+                                    await ctx.reply('**Emojis**\nDid not find specified emoji.', mention_author=False)
                                     return
                                 if index > 27:
                                     index = 27
@@ -309,7 +311,7 @@ class Commands(commands.Cog):
                                 for i in range(index):
                                     send_text += ":" + emoji[1] + ":"
                                 if send_text + warning != "":
-                                    await ctx.send(send_text + warning)
+                                    await ctx.reply(send_text + warning, mention_author=False)
         except Exception:
             trace = traceback.format_exc().rstrip("\n").split("\n")
             utils.on_error("emojis_command()", *trace)

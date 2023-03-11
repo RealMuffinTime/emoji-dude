@@ -15,6 +15,7 @@ from discord.ext import commands
 #
 # New stuff
 #  - `clear` command deletes messages up to a replied message on command usage
+#  - the bot shows now a reply to messages
 # Changes
 #  - add permission check for clean and clear command
 
