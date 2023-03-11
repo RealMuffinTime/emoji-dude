@@ -240,17 +240,25 @@ class Commands(commands.Cog):
             trace = traceback.format_exc().rstrip("\n").split("\n")
             utils.on_error("clean_command()", *trace)
 
-    @commands.command(name='clear', description='clears messages', usage='<amount>')
-    async def clear_command(self, ctx, amount):
+    @commands.command(name='clear', description='clears messages', usage='<amount> or until message by replying')
+    async def clear_command(self, ctx, amount=None):
         try:
             data = await utils.execute_sql(f"SELECT clear FROM set_guilds WHERE guild_id ='{ctx.guild.id}'", True)
             if data[0][0]:
                 if ctx.channel.permissions_for(ctx.guild.me).manage_messages and ctx.channel.permissions_for(ctx.guild.me).read_message_history is True:
-                    try:
-                        amount = int(amount)
-                    except Exception:
-                        await ctx.send(content='**ClearUp**\nIncorrect command usage.')
-                        return
+                    if ctx.message.reference is not None and ctx.message.reference.resolved is not None and type(
+                            ctx.message.reference.resolved) == discord.Message:
+                        amount = 0
+                        async for message in ctx.channel.history(limit=420):  # incrementing search to be added
+                            if message == ctx.message.reference.resolved:
+                                break
+                            amount += 1
+                    else:
+                        try:
+                            amount = int(amount)
+                        except Exception:
+                            await ctx.send(content='**ClearUp**\nIncorrect command usage.')
+                            return
                     message = await ctx.send(content='**ClearUp**\nDeleting...')
 
                     def is_clear_message(m):
