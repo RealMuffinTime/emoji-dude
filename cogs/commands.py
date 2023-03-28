@@ -1,10 +1,9 @@
 import datetime
 import discord
+import emoji as emojilib
 import traceback
 import utils
 from discord.ext import commands
-
-emojis = [["LOL", "lollipop", ["🍭"]], ["POOP", "poop", ["💩"]], ["COOL", "cool", ["🇨", "🇴", "🅾", "🇱"]]]
 
 
 class Commands(commands.Cog):
@@ -154,7 +153,7 @@ class Commands(commands.Cog):
                 msg = await ctx.reply(content='**Ping?**', mention_author=False)
                 await msg.edit(content=f'**Pong!**\n'
                                        f'One Message round-trip took **{int((datetime.datetime.now() - start).microseconds / 1000)}ms**.\n'
-                                       f'Ping of the bot **{int(self.bot.latency * 1000)}ms**.')
+                                       f'Ping of the bot **{int(self.bot.latency * 1000)}ms**.', allowed_mentions=discord.AllowedMentions.none())
         except Exception:
             trace = traceback.format_exc().rstrip("\n").split("\n")
             utils.on_error("ping_command()", *trace)
@@ -277,41 +276,71 @@ class Commands(commands.Cog):
             trace = traceback.format_exc().rstrip("\n").split("\n")
             utils.on_error("clear_command()", *trace)
 
-    @commands.command(name='emojis', aliases=['e'], description='sends many emojis, cip cap 27', usage='<emoji> <amount>')
-    async def emojis_command(self, ctx):
+    @commands.command(name='emojis', aliases=['e'], description='sends many emojis (also animated ones), cip cap 27', usage='<emoji> <amount>')
+    async def emojis_command(self, ctx, emoji_call, amount=1):
         try:
             data = await utils.execute_sql(f"SELECT emojis FROM set_guilds WHERE guild_id ='{ctx.guild.id}'", True)
             if data[0][0]:
-                if ctx.author.bot:
+                emojis_split = emojilib.demojize(emoji_call).replace("<", "|").replace(">", "|").split("|")
+                i = 0
+                while i < len(emojis_split):
+                    partial_emoji = discord.PartialEmoji.from_str(emojis_split[i])
+                    if str(partial_emoji) != str(emojis_split[i]):
+                        emoji = discord.utils.get(ctx.guild.emojis, id=partial_emoji.id)
+                        if emoji is None:
+                            emoji = discord.utils.get(self.bot.emojis, id=partial_emoji.id)
+                            if emoji is None:
+                                emojis_split[i] = ""
+                                i += 1
+                                continue
+                        emojis_split[i] = str(emoji)
+
+                    else:
+                        other_emoji_split = emojis_split[i].split(":")
+                        j = 0
+                        while j < len(other_emoji_split):
+                            emoji = discord.utils.get(ctx.guild.emojis, name=other_emoji_split[j])
+                            if emoji is None:
+                                emoji = discord.utils.get(self.bot.emojis, name=other_emoji_split[j])
+                                if emoji is None:
+                                    emoji = emojilib.emojize(":" + other_emoji_split[j] + ":")
+                                    if emoji == ":" + other_emoji_split[j] + ":":
+                                        other_emoji_split[j] = ""
+                                        j += 1
+                                        continue
+                            other_emoji_split[j] = str(emoji)
+
+                            j += 1
+
+                        emojis_split[i] = "".join(other_emoji_split)
+                    i += 1
+
+                emojis = "".join(emojis_split)
+
+                if emojis == "":
+                    await ctx.reply('**Emojis**\nDid not find specified emoji.', mention_author=False, delete_after=10)
                     return
 
-                msg = ctx.message.content
-                prefix = ctx.prefix
-                alias = ctx.invoked_with
-                text = msg[len(prefix) + len(alias) + 1:]
+                try:
+                    amount = int(amount)
+                    if amount < 0:
+                        amount = amount * (-1)
+                    if amount > 27 or amount == 0:
+                        amount = 27
+                except Exception:
+                    await ctx.reply(content='**Emojis**\nPlease provide a usable number.', mention_author=False, delete_after=10)
+                    return
 
-                if text == '':
-                    await ctx.reply(content='**Emojis**\nYou need to specify the emoji and the number of these.', mention_author=False)
+                output = ""
+                for i in range(amount):
+                    output += str(emojis) + " "
+
+                if ctx.channel.permissions_for(ctx.guild.me).manage_messages:
+                    await ctx.message.delete()
+                if ctx.message.reference is not None and ctx.message.reference.resolved is not None and type(ctx.message.reference.resolved) == discord.Message:
+                    await ctx.message.reference.resolved.reply(output)
                 else:
-                    parameters = text.split(" ")
-                    if len(parameters) == 2:
-                        for emoji in emojis:
-                            if parameters[0].upper() in emoji[0]:
-                                index = 0
-                                send_text = ""
-                                warning = ""
-                                try:
-                                    index = int(parameters[1])
-                                except Exception:
-                                    await ctx.reply('**Emojis**\nDid not find specified emoji.', mention_author=False)
-                                    return
-                                if index > 27:
-                                    index = 27
-                                    warning = f"**Emojis**\nUnfortunately, I only send 27 {emoji[1]}s :disappointed_relieved:."
-                                for i in range(index):
-                                    send_text += ":" + emoji[1] + ":"
-                                if send_text + warning != "":
-                                    await ctx.reply(send_text + warning, mention_author=False)
+                    await ctx.send(output)
         except Exception:
             trace = traceback.format_exc().rstrip("\n").split("\n")
             utils.on_error("emojis_command()", *trace)

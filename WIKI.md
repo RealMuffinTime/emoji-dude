@@ -18,11 +18,15 @@ Every feature can be enabled/disabled. All Commands are enabled and all Events a
 ### `ed.clear`
 * Clears a specific amount of messages
 * `ed.clear <amount>`, as example: `ed.clear 69`
+* You can also reply to a message, then the bot deletes all messages up to the replied one.
 
 ### `ed.emojis`
-* Sends many emojis, you can choose between 1-27 emotes
-* Supported emojis are lol/poop/cool
-* `ed.emojis <emoji> <amount>`, as example: `ed.emojis poop 21`
+* Sends many emojis, multipliable by 1-27 times
+* `ed.emojis <emoji combinations> <amount>`, as example: `ed.emojis 👾 21`
+* All emojis of Discord are supported, also custom ones and custom animated ones.
+* (If you don't have Nitro, you need to insert as following `:name_of_animated_emoji:`).
+* `<emoji combinations>` can be just one, or multiple, but there must be no space between these emojis!
+* You can reply to a previous message so the bot can reply to that message with these emojis.
 
 ### `ed.help`
 * `ed.help`, shows a help menu with categorys and their commands
@@ -37,7 +41,7 @@ Every feature can be enabled/disabled. All Commands are enabled and all Events a
 ## Events
 
 ### AutoPollThreadCreation
-* Automatically creates a thread, when the Simple Poll#9879 Bot creates new polls.
+* Automatically creates a thread, when the Simple Poll#9879 bot creates new polls.
 
 ### AutoReaction
 * The bot reacts to specific parts in a message with emotes

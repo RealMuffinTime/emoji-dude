@@ -9,14 +9,15 @@ from discord.ext import commands
 # TODO remove reaction if multiple reactions by user on simple poll message
 # TODO good counting feature, count 1 2 4 8 15 16 23 42
 # TODO optimize permission return
-# TODO more emoji support
+# TODO more emoji support ed.e :regional_indicator_e::a::regional_indicator_t::heavy_minus_sign::flag_my: :heavy_minus_sign::a::flag_ss: :heavy_minus_sign: 10
 
-# Version 2.1.0 ->
+# Version 2.1.0 -> 2.2.0
 #
 # New stuff
 #  - `clear` command deletes messages up to a replied message on command usage
 #  - the bot shows now a reply to messages
 # Changes
+#  - massive update to the `emojis` command
 #  - add permission check for clean and clear command
 
 bot = None
@@ -138,8 +139,3 @@ async def on_ready():
 
 
 asyncio.run(main())
-# try:
-#     get_bot().run(utils.secret.bot_token, bot=True, reconnect=False)
-# except Exception as e:
-#     trace = traceback.format_exc().rstrip("\n").split("\n")
-#     utils.on_error("run()", *trace)

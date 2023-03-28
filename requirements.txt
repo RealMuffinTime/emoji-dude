@@ -3,3 +3,4 @@ mariadb
 requests
 shortuuid
 websockets
+emoji
