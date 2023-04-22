@@ -54,8 +54,8 @@ CREATE TABLE IF NOT EXISTS `stat_bot_guilds` (
 -- stat_bot_online
 CREATE TABLE IF NOT EXISTS `stat_bot_online` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
-  `action` varchar(50) NOT NULL,
-  `timestamp` datetime NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
+  `startup` datetime NOT NULL,
+  `last_heartbeat` datetime NOT NULL,
   PRIMARY KEY (`id`) USING BTREE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 ROW_FORMAT=DYNAMIC;
 
