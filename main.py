@@ -120,8 +120,7 @@ async def update_guild_count():
 
 @get_bot().event
 async def on_ready():
-    utils.get_start_timestamp()
-    utils.log("info", f"Logged in as {str(get_bot().user)}, on version {get_version()}.")
+    utils.log("info", f"Logged in as {str(get_bot().user)}, on version {get_version()}, in session {str(utils.session_id)}.")
     await get_bot().change_presence(
         activity=discord.Streaming(
             name="Happily this isn't shown, because then you would know, that this is a rick roll. :)",
