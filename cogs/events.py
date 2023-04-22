@@ -14,8 +14,7 @@ class Events(commands.Cog):
     @commands.Cog.listener()
     async def on_message(self, ctx):
         try:
-            author = ctx.author
-            if author.bot:
+            if ctx.author.bot:
                 return
             if ctx.content.startswith("ed."):
                 return
@@ -38,14 +37,18 @@ class Events(commands.Cog):
 
         await self.managed_afk_command(member, before, after)
 
-    # @commands.Cog.listener()
-    # async def on_member_remove(self, ctx):
-    #     channel = self.bot.get_channel(646043498717380610)
-    #     await channel.send("\nsomeone let us alone...\n{}".format())
-    #
-    # @commands.Cog.listener()
-    # async def on_member_join(self, role: discord.Role, member: discord.Member = None):
-    #     await self.bot.add_role(member, role)
+    @commands.Cog.listener()
+    async def on_raw_member_remove(self, data):
+        if data.guild_id == 669895353557975080:
+            channel = self.bot.get_channel(699947018562568223)
+            await channel.send(f"{data.user.mention} has parted ways with us...")
+            utils.log("info", f"{str(data.user.id)} left {str(data.guild_id)}.")
+
+    @commands.Cog.listener()
+    async def on_member_join(self, member):
+        if member.guild.id == 669895353557975080:
+            await member.add_roles(member.guild.get_role(739037531802435594))
+            utils.log("info", f"{str(member.id)} joined {str(member.guild.id)}.")
 
     @commands.command(name='ManagedChannel', description='the bot creates and removes voice channels when needed')
     async def managed_channel_command(self, guild):
