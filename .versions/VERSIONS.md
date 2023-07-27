@@ -1,3 +1,8 @@
+### Version 2.2.1 - 2023-07-27
+###### Changes
+- Improvements to the logging of the online status
+- Added join/leave messages for guild `669895353557975080`
+
 ### Version 2.2.0 - 2023-03-28
 ###### New stuff
 - `clear` command deletes messages up to a replied message on command usage

@@ -11,7 +11,7 @@ from discord.ext import commands
 # TODO optimize permission return
 # TODO bugfix emoji command ed.e :regional_indicator_e::a::regional_indicator_t::heavy_minus_sign::flag_my: :heavy_minus_sign::a::flag_ss: :heavy_minus_sign: 10
 
-# Version 2.2.0 ->
+# Version 2.2.1 ->
 #
 # New stuff
 #  -
@@ -54,7 +54,7 @@ def get_prefix():
 def get_version():
     global version
     if version is None:
-        version = "2.2.0"
+        version = "2.2.1"
     return version
 
 
