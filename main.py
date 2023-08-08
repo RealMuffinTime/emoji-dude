@@ -28,6 +28,11 @@ def get_bot():
     global bot
     if bot is None:
         bot = commands.Bot(
+            activity=discord.Streaming(
+                name="Happily this isn't shown, because then you would know, that this is a rick roll. :)",
+                details="nobody beats me in emoting",
+                url="https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+                type=discord.ActivityType.streaming),
             case_insensitive=True,
             command_prefix=get_prefix(),
             description='a emoji spamming dude',
@@ -121,12 +126,6 @@ async def update_guild_count():
 @get_bot().event
 async def on_ready():
     utils.log("info", f"Logged in as {str(get_bot().user)}, on version {get_version()}, in session {str(utils.session_id)}.")
-    await get_bot().change_presence(
-        activity=discord.Streaming(
-            name="Happily this isn't shown, because then you would know, that this is a rick roll. :)",
-            details="nobody beats me in emoting",
-            url="https://www.youtube.com/watch?v=dQw4w9WgXcQ",
-            type=discord.ActivityType.streaming))
     for guild in get_bot().guilds:
         utils.log("info", f" - {guild.name} {guild.id}")
         await utils.execute_sql(f"INSERT IGNORE INTO set_guilds (guild_id) VALUES ('{guild.id}')", False)
