@@ -11,8 +11,6 @@ Every feature can be enabled/disabled. \
 All Commands are enabled and all Events are disabled by default. \
 Support & Bugs on: <https://discord.gg/Da9haye>
 
-by **MuffinTime#4484**
-
 #### When running yourself
 
 To run the bot yourself you need to set environment variables. As example: `BOT_TOKEN=JBDKfKSDU4e77eurj`
