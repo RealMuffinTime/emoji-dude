@@ -13,6 +13,17 @@ Support & Bugs on: <https://discord.gg/Da9haye>
 
 by **MuffinTime#4484**
 
+#### When running yourself
+
+To run the bot yourself you need to set environment variables. As example: `BOT_TOKEN=JBDKfKSDU4e77eurj`
+- With `BOT_ENVIR` you set the environment the bot runs in, this should be either `dev` or `production`.
+- With `BOT_TOKEN` you set the Discord token for your bot.
+- With `BOT_DATABASE_HOST` you set the hostname for your database.
+- With `BOT_DATABASE_PORT` you set the port for your database.
+- With `BOT_DATABASE_USER` you set the user which connects to your database.
+- With `BOT_DATABASE_PASS` you set the password for the user to connect to your database.
+- With `BOT_DATABASE_NAME` you set the database name you will be using.
+
 #### Commands
 
 ##### `ed.ping`

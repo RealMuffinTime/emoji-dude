@@ -1,6 +1,7 @@
 import asyncio
 import datetime
 import discord
+import os
 import traceback
 import utils
 from discord.ext import commands
@@ -10,13 +11,6 @@ from discord.ext import commands
 # TODO good counting feature, count 1 2 4 8 15 16 23 42
 # TODO optimize permission return
 # TODO bugfix emoji command ed.e :regional_indicator_e::a::regional_indicator_t::heavy_minus_sign::flag_my: :heavy_minus_sign::a::flag_ss: :heavy_minus_sign: 10
-
-# Version 2.2.1 ->
-#
-# New stuff
-#  -
-# Changes
-#  -
 
 bot = None
 cogs = None
@@ -69,7 +63,7 @@ async def main():
         for cog in get_cogs():
             if get_bot().get_cog(type(cog).__name__) is None:
                 await get_bot().load_extension(cog)
-        await get_bot().start(utils.secret.bot_token, reconnect=False)
+        await get_bot().start(os.environ['BOT_TOKEN'], reconnect=False)
 
 
 async def check_afk():
