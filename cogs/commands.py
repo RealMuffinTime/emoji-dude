@@ -97,31 +97,33 @@ class Commands(commands.Cog):
                     values = await utils.execute_sql(f"SELECT * FROM set_guilds WHERE guild_id = '{ctx.guild.id}'", True)
 
                     command_name = command.callback.__name__.replace("_command", "")
+                    print(command_name)
 
                     settings = ""
                     i = 0
                     while i < len(values[0]):
                         config = description[i][0]
-                        if config.startswith(command_name) and not config.endswith("ignore"):
-
-                            name = description[i][0][len(command_name) + 1:].replace("_", " ").title()
-                            select_options = []
-                            text_label = None
-                            text_default = None
-
-                            config = config[len(command_name) + 1:1 + len(name)]
+                        if config.startswith(command_name):
+                            config = config[len(command_name) + 1:]
 
                             value = values[0][i]
-                            if config == "bool":
-                                if value == 1:
-                                    value = "Yes"
+                            if not config.startswith("ignore"):
+                                if config.startswith("bool"):
+                                    setting = config[5:].replace("_", " ").title()
+                                    if value == 1:
+                                        value = "`Yes`"
+                                    else:
+                                        value = "`No`"
+                                elif config.startswith("voice_channel"):
+                                    setting = config[14:].replace("_", " ").title()
+                                    if value is not None:
+                                        value = (await ctx.guild.fetch_channel(value)).mention
+                                elif config.startswith("seconds"):
+                                    setting = config[7:].replace("_", " ").title()
+                                    value = f"`{str(value)}s`"
                                 else:
-                                    value = "No"
-                            elif config == "voice_channel":
-                                value = await ctx.guild.fetch_channel(value).mention
-                            elif config == "seconds":
-                                value = str(value) + "s"
-                            settings += f'**{name}:** `{value}`\n'
+                                    setting = config
+                                settings += f'**{setting}:** {value}\n'
                         i += 1
 
                     if settings == "":
