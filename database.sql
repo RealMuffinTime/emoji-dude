@@ -10,19 +10,20 @@
 -- set_guilds
 CREATE TABLE IF NOT EXISTS `set_guilds` (
   `guild_id` bigint(18) NOT NULL,
-  `auto_reaction` tinyint(1) NOT NULL DEFAULT 0,
-  `auto_poll_thread_creation` tinyint(1) NOT NULL DEFAULT 0,
-  `backup_channel` tinyint(1) NOT NULL DEFAULT 1,
-  `clean` tinyint(1) NOT NULL DEFAULT 1,
-  `clear` tinyint(1) NOT NULL DEFAULT 1,
-  `emojis` tinyint(1) NOT NULL DEFAULT 1,
-  `managed_afk` tinyint(1) NOT NULL DEFAULT 0,
-  `managed_afk_timeout` BIGINT(18) NOT NULL DEFAULT 120,
-  `managed_channel` tinyint(1) NOT NULL DEFAULT 0,
-  `managed_channel_channel` BIGINT(18) DEFAULT NULL,
-  `managed_channel_running` tinyint(1) NOT NULL DEFAULT 0,
-  `ping` tinyint(1) NOT NULL DEFAULT 1,
-  `screenshare` tinyint(1) NOT NULL DEFAULT 0,
+  `auto_reaction_bool_enabled` tinyint(1) NOT NULL DEFAULT 0,
+  `auto_poll_thread_creation_bool_enabled` tinyint(1) NOT NULL DEFAULT 0,
+  `backup_channel_bool_enabled` tinyint(1) NOT NULL DEFAULT 1,
+  `clean_bool_enabled` tinyint(1) NOT NULL DEFAULT 1,
+  `clear_bool_enabled` tinyint(1) NOT NULL DEFAULT 1,
+  `emojis_bool_enabled` tinyint(1) NOT NULL DEFAULT 1,
+  `managed_afk_bool_enabled` tinyint(1) NOT NULL DEFAULT 0,
+  `managed_afk_seconds_timeout` BIGINT(18) NOT NULL DEFAULT 120,
+  `managed_channel_bool_enabled` tinyint(1) NOT NULL DEFAULT 0,
+  `managed_channel_voice_channel_channel` BIGINT(18) DEFAULT NULL,
+  `managed_channel_ignore_channels` varchar(512) DEFAULT NULL,
+  `managed_channel_ignore_running` tinyint(1) NOT NULL DEFAULT 0,
+  `ping_bool_enabled` tinyint(1) NOT NULL DEFAULT 1,
+  `screenshare_bool_enabled` tinyint(1) NOT NULL DEFAULT 0,
   PRIMARY KEY (`guild_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 

@@ -6,6 +6,11 @@ import traceback
 import utils
 from discord.ext import commands
 
+# TODO slash commands
+# TODO add stats, add logs
+# TODO unify clear clean, remove by member messages
+# TODO change managed channel system
+# TODO improve database structure
 # TODO managed_afk move entirely to events
 # TODO remove reaction if multiple reactions by user on simple poll message
 # TODO good counting feature, count 1 2 4 8 15 16 23 42
@@ -67,11 +72,11 @@ async def main():
 
 
 async def check_afk():
-    afk_members = await utils.execute_sql(f"SELECT set_users.user_id, set_users.last_seen, set_users.last_guild, set_guilds.managed_afk_timeout, set_users.afk_managed FROM set_users "
+    afk_members = await utils.execute_sql(f"SELECT set_users.user_id, set_users.last_seen, set_users.last_guild, set_guilds.managed_afk_seconds_timeout, set_users.afk_managed FROM set_users "
                                           f"INNER JOIN set_guilds ON set_users.last_guild = set_guilds.guild_id "
                                           f"WHERE last_seen IS NOT NULL", True)
     for afk_member in afk_members:
-        data = await utils.execute_sql(f"SELECT managed_afk FROM set_guilds WHERE guild_id ='{afk_member[2]}'", True)
+        data = await utils.execute_sql(f"SELECT managed_afk_bool_enabled FROM set_guilds WHERE guild_id ='{afk_member[2]}'", True)
         if data[0][0]:
             if afk_member[4] == 0 and utils.get_curr_timestamp(True) - afk_member[1] >= datetime.timedelta(seconds=afk_member[3]):
                 last_guild = get_bot().get_guild(afk_member[2])

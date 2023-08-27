@@ -53,11 +53,11 @@ class Events(commands.Cog):
     @commands.command(name='ManagedChannel', description='the bot creates and removes voice channels when needed')
     async def managed_channel_command(self, guild):
         if isinstance(guild, discord.guild.Guild):
-            data = await utils.execute_sql(f"SELECT managed_channel, managed_channel_channel, managed_channel_running FROM set_guilds WHERE guild_id ='{guild.id}'", True)
+            data = await utils.execute_sql(f"SELECT managed_channel_bool_enabled, managed_channel_voice_channel_channel, managed_channel_ignore_running FROM set_guilds WHERE guild_id ='{guild.id}'", True)
             if data[0][0]:
                 try:
                     if data[0][2] == 0:
-                        await utils.execute_sql(f"UPDATE set_guilds SET managed_channel_running = 1 WHERE guild_id ='{str(guild.id)}'", False)
+                        await utils.execute_sql(f"UPDATE set_guilds SET managed_channel_ignore_running = 1 WHERE guild_id ='{str(guild.id)}'", False)
 
                         reset_channel = False
                         if guild.get_channel(data[0][1]) is not None:
@@ -103,19 +103,19 @@ class Events(commands.Cog):
                             reset_channel = True
 
                         if reset_channel:
-                            await utils.execute_sql(f"UPDATE set_guilds SET managed_channel_channel = NULL WHERE guild_id ='{str(guild.id)}'", False)
+                            await utils.execute_sql(f"UPDATE set_guilds SET managed_channel_voice_channel_channel = NULL WHERE guild_id ='{str(guild.id)}'", False)
 
-                        await utils.execute_sql(f"UPDATE set_guilds SET managed_channel_running = 0 WHERE guild_id ='{str(guild.id)}'", False)
+                        await utils.execute_sql(f"UPDATE set_guilds SET managed_channel_ignore_running = 0 WHERE guild_id ='{str(guild.id)}'", False)
 
                 except Exception:
-                    await utils.execute_sql(f"UPDATE set_guilds SET managed_channel_running = 0 WHERE guild_id ='{str(guild.id)}'", False)
+                    await utils.execute_sql(f"UPDATE set_guilds SET managed_channel_ignore_running = 0 WHERE guild_id ='{str(guild.id)}'", False)
                     trace = traceback.format_exc().rstrip("\n").split("\n")
                     utils.on_error("managed_channel_command()", *trace)
 
     @commands.command(name='ManagedAFK', description='the bot moves muted users to the afk channel and back')
     async def managed_afk_command(self, member, before, after):
         if isinstance(member, discord.member.Member):
-            data = await utils.execute_sql(f"SELECT managed_afk FROM set_guilds WHERE guild_id ='{member.guild.id}'", True)
+            data = await utils.execute_sql(f"SELECT managed_afk_bool_enabled FROM set_guilds WHERE guild_id ='{member.guild.id}'", True)
             if data[0][0]:
                 try:
                     guild = member.guild
@@ -173,7 +173,7 @@ class Events(commands.Cog):
     @commands.command(name='AutoReaction', description='the bot reacts to specific parts of message with emotes')
     async def auto_reaction_command(self, ctx):
         if isinstance(ctx, discord.Message):
-            data = await utils.execute_sql(f"SELECT auto_reaction FROM set_guilds WHERE guild_id ='{str(ctx.guild.id)}'", True)
+            data = await utils.execute_sql(f"SELECT auto_reaction_bool_enabled FROM set_guilds WHERE guild_id ='{str(ctx.guild.id)}'", True)
             if data[0][0]:
                 if ctx.channel.permissions_for(ctx.guild.me).add_reactions and ctx.channel.permissions_for(ctx.guild.me).read_message_history:
                     for emoji in emojis:
@@ -193,7 +193,7 @@ class Events(commands.Cog):
                 message_id = int(raw_data['id'])
                 guild = self.bot.get_guild(guild_id)
                 channel = guild.get_channel(channel_id)
-                data = await utils.execute_sql(f"SELECT auto_poll_thread_creation FROM set_guilds WHERE guild_id ='{guild_id}'", True)
+                data = await utils.execute_sql(f"SELECT auto_poll_thread_creation_bool_enabled FROM set_guilds WHERE guild_id ='{guild_id}'", True)
                 if data[0][0]:
                     message = await channel.fetch_message(message_id)
                     if webhook_id == 324631108731928587:

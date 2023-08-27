@@ -58,8 +58,8 @@ class Commands(commands.Cog):
 
                     command_name = command.callback.__name__.replace("_command", "")
                     status = " - *Enabled*"
-                    if not command_name.startswith("help") and not command_name.startswith("sett"):
-                        enabled = await utils.execute_sql(f"SELECT {command_name} FROM set_guilds WHERE guild_id ='{ctx.guild.id}'", True)
+                    if not command_name.startswith("help"):
+                        enabled = await utils.execute_sql(f"SELECT {command_name}_bool_enabled FROM set_guilds WHERE guild_id ='{ctx.guild.id}'", True)
                         if not enabled[0][0]:
                             status = " - *Disabled*"
 
@@ -93,7 +93,7 @@ class Commands(commands.Cog):
                 )
 
                 if ctx.guild is not None:
-                    names = await utils.execute_sql(f"DESCRIBE set_guilds", True)
+                    description = await utils.execute_sql(f"DESCRIBE set_guilds", True)
                     values = await utils.execute_sql(f"SELECT * FROM set_guilds WHERE guild_id = '{ctx.guild.id}'", True)
 
                     command_name = command.callback.__name__.replace("_command", "")
@@ -101,29 +101,40 @@ class Commands(commands.Cog):
                     settings = ""
                     i = 0
                     while i < len(values[0]):
-                        if names[i][0].startswith(command_name) and not names[i][0].endswith("running"):
-                            name = names[i][0][1 + len(command_name):].replace("_", " ").title()
+                        config = description[i][0]
+                        if config.startswith(command_name) and not config.endswith("ignore"):
+
+                            name = description[i][0][len(command_name) + 1:].replace("_", " ").title()
+                            select_options = []
+                            text_label = None
+                            text_default = None
+
+                            config = config[len(command_name) + 1:1 + len(name)]
+
                             value = values[0][i]
-                            if name == "":
-                                name = "Enabled"
+                            if config == "bool":
                                 if value == 1:
                                     value = "Yes"
                                 else:
                                     value = "No"
+                            elif config == "voice_channel":
+                                value = await ctx.guild.fetch_channel(value).mention
+                            elif config == "seconds":
+                                value = str(value) + "s"
                             settings += f'**{name}:** `{value}`\n'
                         i += 1
 
                     if settings == "":
                         settings = "*There are no changeable settings regarding this command.*\n"
-
-                    if ctx.author.guild_permissions.administrator is True or ctx.author.guild_permissions.manage_guild is True:
-                        admin = "*You are an admin, you can change these settings.*"
                     else:
-                        admin = "*If you would be an admin, you could change settings here.\nHAHA, but you are NOT.*"
+                        if ctx.author.guild_permissions.administrator is True or ctx.author.guild_permissions.manage_guild is True:
+                            settings += "*You are an admin, you can change these settings.*"
+                        else:
+                            settings += "*If you would be an admin, you could change settings here.\nHAHA, but you are NOT.*"
 
                     embed.add_field(
                         name="\u200b\nSettings",
-                        value=settings + admin,
+                        value=settings,
                         inline=False
                     )
 
@@ -147,7 +158,7 @@ class Commands(commands.Cog):
     @commands.command(name='ping', description='some pongs')
     async def ping_command(self, ctx):
         try:
-            data = await utils.execute_sql(f"SELECT ping FROM set_guilds WHERE guild_id ='{ctx.guild.id}'", True)
+            data = await utils.execute_sql(f"SELECT ping_bool_enabled FROM set_guilds WHERE guild_id ='{ctx.guild.id}'", True)
             if data[0][0]:
                 start = datetime.datetime.now()
                 msg = await ctx.reply(content='**Ping?**', mention_author=False)
@@ -161,7 +172,7 @@ class Commands(commands.Cog):
     @commands.command(name='backupchannel', aliases=['bc'], description='can be used to back up channel to another one')
     async def backup_channel_command(self, ctx):
         try:
-            data = await utils.execute_sql(f"SELECT backup_channel FROM set_guilds WHERE guild_id ='{ctx.guild.id}'", True)
+            data = await utils.execute_sql(f"SELECT backup_channel_bool_enabled FROM set_guilds WHERE guild_id ='{ctx.guild.id}'", True)
             if data[0][0]:
                 if ctx.author.id == 412235309204635649:
                     content = ctx.message.content.split(" ")
@@ -198,7 +209,7 @@ class Commands(commands.Cog):
     @commands.command(name='screenshare', aliases=['ss'], description='can be used to share your screen in voice channels')
     async def screenshare_command(self, ctx):
         try:
-            data = await utils.execute_sql(f"SELECT screenshare FROM set_guilds WHERE guild_id ='{ctx.guild.id}'", True)
+            data = await utils.execute_sql(f"SELECT screenshare_bool_enabled FROM set_guilds WHERE guild_id ='{ctx.guild.id}'", True)
             if data[0][0]:
                 if ctx.author.voice:
                     channel = ctx.author.voice.channel
@@ -215,7 +226,7 @@ class Commands(commands.Cog):
     @commands.command(name='clean', description='cleans all messages affecting this bot')
     async def clean_command(self, ctx):
         try:
-            data = await utils.execute_sql(f"SELECT clean FROM set_guilds WHERE guild_id ='{ctx.guild.id}'", True)
+            data = await utils.execute_sql(f"SELECT clean_bool_enabled FROM set_guilds WHERE guild_id ='{ctx.guild.id}'", True)
             if data[0][0]:
                 if ctx.channel.permissions_for(ctx.guild.me).manage_messages and ctx.channel.permissions_for(ctx.guild.me).read_message_history is True:
                     message = await ctx.reply(content='**CleanUp**\nDeleting...', mention_author=False)
@@ -243,7 +254,7 @@ class Commands(commands.Cog):
     @commands.command(name='clear', description='clears messages', usage='<amount> or until message by replying')
     async def clear_command(self, ctx, amount=None):
         try:
-            data = await utils.execute_sql(f"SELECT clear FROM set_guilds WHERE guild_id ='{ctx.guild.id}'", True)
+            data = await utils.execute_sql(f"SELECT clear_bool_enabled FROM set_guilds WHERE guild_id ='{ctx.guild.id}'", True)
             if data[0][0]:
                 if ctx.channel.permissions_for(ctx.guild.me).manage_messages and ctx.channel.permissions_for(ctx.guild.me).read_message_history is True:
                     if ctx.message.reference is not None and ctx.message.reference.resolved is not None and type(
@@ -279,7 +290,7 @@ class Commands(commands.Cog):
     @commands.command(name='emojis', aliases=['e'], description='sends many emojis (also animated ones), cip cap 27', usage='<emoji> <amount>')
     async def emojis_command(self, ctx, emoji_call, amount=1):
         try:
-            data = await utils.execute_sql(f"SELECT emojis FROM set_guilds WHERE guild_id ='{ctx.guild.id}'", True)
+            data = await utils.execute_sql(f"SELECT emojis_bool_enabled FROM set_guilds WHERE guild_id ='{ctx.guild.id}'", True)
             if data[0][0]:
                 emojis_split = emojilib.demojize(emoji_call).replace("<", "|").replace(">", "|").split("|")
                 i = 0
