@@ -14,12 +14,22 @@ class Commands(commands.Cog):
     @commands.command(name='help', description='The help command!', aliases=['commands', 'command'], usage='<category/command>')
     async def help_command(self, ctx, parameter=None):
         try:
+
+            text = await self.generate_help_text(ctx, parameter)
+
+            await ctx.reply(content=text[0], embed=text[1], delete_after=text[2], mention_author=False)
+        except Exception:
+            trace = traceback.format_exc().rstrip("\n").split("\n")
+            utils.on_error("help_command()", *trace)
+
+    async def generate_help_text(self, ctx, parameter):
+        try:
             if str(ctx.channel.type) == "private":
                 color = discord.Colour.random()
             else:
                 if ctx.channel.permissions_for(ctx.author.guild.me).embed_links is False:
-                    await ctx.reply(content="**Help Command**\nI don't have permission to use embed messages.\nPlease provide the `Embed Links` permission.", delete_after=15, mention_author=False)
-                    return
+                    content = "**Help Command**\nI don't have permission to use embed messages.\nPlease provide the `Embed Links` permission."
+                    return content, None, 15
                 color = ctx.channel.guild.me.color.value
 
             embed = discord.Embed(color=color)
@@ -78,7 +88,7 @@ class Commands(commands.Cog):
             elif parameter.lower() in lower_commands:
                 command = self.bot.get_command(commands[lower_commands.index(parameter.lower())])
 
-                embed.title += f" - Command {command.name}"
+                embed.title += f" - {command.cog.qualified_name.strip('s')} {command.name}"
 
                 description = f"Description: {command.description}\n"
 
@@ -141,21 +151,15 @@ class Commands(commands.Cog):
                     )
 
             else:
-                await ctx.reply("**Help Command**\nInvalid category or command specified.", delete_after=10, mention_author=False)
-                return
+                content = "**Help Command**\nInvalid category or command specified."
+                return content, None, 10
 
-            await ctx.reply(embed=embed, mention_author=False)
+            return None, embed, None
+
         except Exception:
             trace = traceback.format_exc().rstrip("\n").split("\n")
             utils.on_error("help_command()", *trace)
 
-    @commands.command(name='settings', description='Not implemented yet.')
-    async def settings_command(self, ctx):
-        try:
-            await ctx.send(content="**Settings**\nNot implemented yet.")
-        except Exception:
-            trace = traceback.format_exc().rstrip("\n").split("\n")
-            utils.on_error("settings_command()", *trace)
 
     @commands.command(name='ping', description='some pongs')
     async def ping_command(self, ctx):
