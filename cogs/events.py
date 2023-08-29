@@ -94,8 +94,7 @@ class Events(commands.Cog):
                                             highest_channel = pair
                                     channel = highest_channel[0]
                                     if channel.permissions_for(channel.guild.me).manage_channels:
-                                        new_channel = await guild.create_voice_channel(name=keyword + " " + str(highest_channel[1] + 1), category=channel.category)
-                                        await new_channel.move(after=channel)
+                                        new_channel = await guild.create_voice_channel(name=keyword + " " + str(highest_channel[1] + 1), category=channel.category, position=channel.position)
                                         utils.log("info", "Create: " + new_channel.name + " " + str(new_channel.id))
                             else:
                                 reset_channel = True
