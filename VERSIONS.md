@@ -6,48 +6,48 @@
 ### Version 2.2.0 - 2023-03-28
 ###### New stuff
 - `clear` command deletes messages up to a replied message on command usage
-- the bot shows now a reply to messages
+- The bot shows now a reply to messages
 ###### Changes
-- massive update to the `emojis` command
-- add permission check for clean and clear command
+- Massive update to the `emojis` command
+- Add permission check for clean and clear command
 
 ### Version 2.1.0 - 2023-02-23
 ###### New stuff
-- settings are now available, settings got integrated into the `help` command
-- the `help` command shows now also info to specific commands, there are also the settings located
-- features can be enabled/disabled
+- Settings are now available, settings got integrated into the `help` command
+- The `help` command shows now also info to specific commands, there are also the settings located
+- Features can be enabled/disabled
 ###### Changes
-- the `help` command got UI improvements
+- The `help` command got UI improvements
 - `screenshare` command got also UI improvements
-- `managed_afk` add permission check
-- internal changes to `managed_channel`
+- `managedafk` add permission check
+- internal changes to `managedchannel`
 
 ### Version 2.0.1 - 2022-09-20
 ###### Changes
-- added a check for running managed_channels only once at a time
+- Added a check for running managed_channels only once at a time
 
 ### Version 2.0.0 - 2022-09-14
 ###### New stuff
-- user gets not afk managed when stream or video active
-- managed channel adds new channel under last current existing
-- managed channel checks for channels after start of bot
+- User gets not afk managed when stream or video active
+- Managed channel adds new channel under last current existing
+- Managed channel checks for channels after start of bot
 ###### Changes
-- optimized help command: dynamic title, dynamic prefix
-- moved to discord.py v2
-- multiple reworks of afk management
+- Optimized help command: dynamic title, dynamic prefix
+- Moved to discord.py v2
+- Multiple reworks of afk management
 - (error) logging optimization
 
 ### Version 1.1.0 - 2022-04-14
 ###### New stuff
-- added afk management
-- added database support
-- added initial help command
-- added placeholder for settings command
-- added initial backup command
+- Added afk management
+- Added database support
+- Added initial help command
+- Added placeholder for settings command
+- Added initial backup command
 ###### Changes
-- voice channel manager fix
-- rework of cogs
-- overall improvements
+- Voice channel manager fix
+- Rework of cogs
+- Overall improvements
 
 ### Version 1.0.2 - 2021-12-17
 ###### New stuff
