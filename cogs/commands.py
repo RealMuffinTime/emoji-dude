@@ -15,11 +15,12 @@ class Commands(commands.Cog):
     @commands.command(name='help', description='The help command!', aliases=['commands', 'command'], usage='<category/command>')
     async def help_command(self, ctx, parameter=None):
         try:
+            data = await utils.execute_sql(f"SELECT help_ignore_enabled FROM set_guilds WHERE guild_id ='{ctx.guild.id}'", True)
+            if data[0][0]:
+                content, embed, delete = await self.generate_help_text(ctx, parameter)
+                view = await self.generate_help_view(ctx, parameter)
 
-            content, embed, delete = await self.generate_help_text(ctx, parameter)
-            view = await self.generate_help_view(ctx, parameter)
-
-            await ctx.reply(content=content, embed=embed, view=view, delete_after=delete, mention_author=False)
+                await ctx.reply(content=content, embed=embed, view=view, delete_after=delete, mention_author=False)
         except Exception:
             trace = traceback.format_exc().rstrip("\n").split("\n")
             utils.on_error("help_command()", *trace)

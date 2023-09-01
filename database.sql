@@ -16,6 +16,7 @@ CREATE TABLE IF NOT EXISTS `set_guilds` (
   `clean_bool_enabled` tinyint(1) NOT NULL DEFAULT 1,
   `clear_bool_enabled` tinyint(1) NOT NULL DEFAULT 1,
   `emojis_bool_enabled` tinyint(1) NOT NULL DEFAULT 1,
+  `help_ignore_enabled` tinyint(1) NOT NULL DEFAULT 1,
   `managed_afk_bool_enabled` tinyint(1) NOT NULL DEFAULT 0,
   `managed_afk_seconds_timeout` BIGINT(18) NOT NULL DEFAULT 300,
   `managed_channel_bool_enabled` tinyint(1) NOT NULL DEFAULT 0,
