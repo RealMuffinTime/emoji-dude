@@ -6,9 +6,10 @@ import traceback
 import utils
 from discord.ext import commands
 
+# TODO message show timeout
 # TODO slash commands
 # TODO add stats, add logs
-# TODO unify clear clean, remove by member messages
+# TODO unify clear clean, remove by member messages, add admin check
 # TODO change managed channel system
 # TODO improve database structure
 # TODO managed_afk move entirely to events
