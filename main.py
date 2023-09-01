@@ -7,13 +7,13 @@ import utils
 from discord.ext import commands
 
 # TODO message show timeout
-# TODO slash commands
 # TODO add stats, add logs
-# TODO unify clear clean, remove by member messages, add admin check
+# TODO unify clear clean, remove by member messages
+# TODO add admin or moderator role checks
+# TODO slash commands
 # TODO change managed channel system
-# TODO improve database structure
 # TODO managed_afk move entirely to events
-# TODO remove reaction if multiple reactions by user on simple poll message
+# TODO improve database structure
 # TODO good counting feature, count 1 2 4 8 15 16 23 42
 # TODO optimize permission return
 # TODO bugfix emoji command ed.e :regional_indicator_e::a::regional_indicator_t::heavy_minus_sign::flag_my: :heavy_minus_sign::a::flag_ss: :heavy_minus_sign: 10
@@ -59,7 +59,7 @@ def get_prefix():
 def get_version():
     global version
     if version is None:
-        version = "2.2.1"
+        version = "2.3.0"
     return version
 
 

@@ -1,3 +1,14 @@
+### Version 2.3.0 - 2023-09-01
+###### New Stuff
+- Add settings view to help page, all command settings can now be updated by the user!!!
+###### Changes
+- Fix new channel not being directly under previous channel in `managedchannel`
+###### Internal changes
+- Move activity setup to client init 
+- Add raw return for start_timestamp
+- Store secrets in environment variables
+- Create log folder automatically
+
 ### Version 2.2.1 - 2023-07-27
 ###### Changes
 - Improvements to the logging of the online status
