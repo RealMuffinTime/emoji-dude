@@ -1,5 +1,5 @@
 ### Version 2.3.0 - 2023-09-01
-###### New Stuff
+###### New stuff
 - Add settings view to help page, all command settings can now be updated by the user!!!
 ###### Changes
 - Fix new channel not being directly under previous channel in `managedchannel`
