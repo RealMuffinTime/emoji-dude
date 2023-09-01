@@ -31,8 +31,9 @@ class Commands(commands.Cog):
                 color = discord.Colour.random()
             else:
                 if ctx.channel.permissions_for(ctx.author.guild.me).embed_links is False:
-                    content = "**Help Command**\nI don't have permission to use embed messages.\nPlease provide the `Embed Links` permission."
-                    return content, None, 15
+                    content = (f"**Help Command** - Dismissed <t:{int(datetime.datetime.now().timestamp()) + 10}:R>\n"
+                               f"I don't have permission to use embed messages.\nPlease provide the `Embed Links` permission.")
+                    return content, None, 10
                 color = ctx.channel.guild.me.color.value
 
             embed = discord.Embed(color=color)
@@ -153,7 +154,8 @@ class Commands(commands.Cog):
                     )
 
             else:
-                content = "**Help Command**\nInvalid category or command specified."
+                content = (f"**Help Command** - Dismissed <t:{int(datetime.datetime.now().timestamp()) + 10}:R>\n"
+                           "Invalid category or command specified.")
                 return content, None, 10
 
             return None, embed, None
@@ -370,8 +372,9 @@ class Commands(commands.Cog):
                 data = int(data)
                 await utils.execute_sql(f"UPDATE set_guilds SET {description[settings[self.index]][0]} = '{data}' WHERE guild_id ='{interaction.guild.id}'", False)
             except:
-                message = await interaction.response.edit_message(content="**Help Command**\nInvalid value entered.", embed=None, view=None)
-                await asyncio.sleep(5)
+                message = await interaction.response.edit_message(content=f"**Help Command** - Dismissed <t:{int(datetime.datetime.now().timestamp()) + 10}:R>\n"
+                                                                          "Invalid value entered.", embed=None, view=None)
+                await asyncio.sleep(10)
 
             content, embed, delete = await Commands.generate_help_text(self.commands_object, self.ctx, self.parameter)
             view = await Commands.generate_help_view(self.commands_object, self.ctx, self.parameter, self.index)
@@ -426,7 +429,8 @@ class Commands(commands.Cog):
                         await ctx.reply("**BackupChannel**\nInvalid input.", mention_author=False)
                         return
                 else:
-                    await ctx.reply("**BackupChannel**\nYou have no permission to use this command.", delete_after=15, mention_author=False)
+                    await ctx.reply(f"**BackupChannel** - Dismissed <t:{int(datetime.datetime.now().timestamp()) + 10}:R>\n"
+                                    "You have no permission to use this command.", delete_after=10, mention_author=False)
         except Exception:
             trace = traceback.format_exc().rstrip("\n").split("\n")
             utils.on_error("backup_channel_command()", *trace)
@@ -468,10 +472,12 @@ class Commands(commands.Cog):
 
                     deleted = await ctx.channel.purge(check=check)
 
-                    await message.edit(content=f'**CleanUp**\nDeleted **{len(deleted) - 1}** message(s).', delete_after=5)
+                    await message.edit(content=f'**CleanUp** - Dismissed <t:{int(datetime.datetime.now().timestamp()) + 10}:R>\n'
+                                               f'Deleted **{len(deleted) - 1}** message(s).', delete_after=10)
                 else:
-                    await ctx.reply('**CleanUp**\nMissing permission to delete messages.\n'
-                                    'Please provide the `Manage Messages` and `Read Message History` permission.', delete_after=15, mention_author=False)
+                    await ctx.reply(f'**CleanUp** - Dismissed <t:{int(datetime.datetime.now().timestamp()) + 10}:R>\n'
+                                    'Missing permission to delete messages.\n'
+                                    'Please provide the `Manage Messages` and `Read Message History` permission.', delete_after=10, mention_author=False)
         except Exception:
             trace = traceback.format_exc().rstrip("\n").split("\n")
             utils.on_error("clean_command()", *trace)
@@ -493,7 +499,8 @@ class Commands(commands.Cog):
                         try:
                             amount = int(amount)
                         except Exception:
-                            await ctx.reply(content='**ClearUp**\nIncorrect command usage.', mention_author=False)
+                            await ctx.reply(content=f'**ClearUp** - Dismissed <t:{int(datetime.datetime.now().timestamp()) + 10}:R>'
+                                                    '\nIncorrect command usage.', delete_after=10, mention_author=False)
                             return
                     message = await ctx.reply(content='**ClearUp**\nDeleting...', mention_author=False)
 
@@ -506,8 +513,9 @@ class Commands(commands.Cog):
 
                     await message.edit(content=f'**ClearUp**\nDeleted **{len(deleted) - 1}** message(s).', delete_after=5)
                 else:
-                    await ctx.reply('**ClearUp**\nMissing permission to delete messages.\n'
-                                    'Please provide the `Manage Messages` and `Read Message History` permission.', delete_after=15, mention_author=False)
+                    await ctx.reply(f'**ClearUp** - Dismissed <t:{int(datetime.datetime.now().timestamp()) + 10}:R>\n'
+                                    'Missing permission to delete messages.\n'
+                                    'Please provide the `Manage Messages` and `Read Message History` permission.', delete_after=10, mention_author=False)
         except Exception:
             trace = traceback.format_exc().rstrip("\n").split("\n")
             utils.on_error("clear_command()", *trace)
@@ -554,7 +562,8 @@ class Commands(commands.Cog):
                 emojis = "".join(emojis_split)
 
                 if emojis == "":
-                    await ctx.reply('**Emojis**\nDid not find specified emoji.', mention_author=False, delete_after=10)
+                    await ctx.reply(f'**Emojis** - Dismissed <t:{int(datetime.datetime.now().timestamp()) + 10}:R>\n'
+                                    'Did not find specified emoji.', mention_author=False, delete_after=10)
                     return
 
                 try:
@@ -564,7 +573,8 @@ class Commands(commands.Cog):
                     if amount > 27 or amount == 0:
                         amount = 27
                 except Exception:
-                    await ctx.reply(content='**Emojis**\nPlease provide a usable number.', mention_author=False, delete_after=10)
+                    await ctx.reply(content=f'**Emojis** - Dismissed <t:{int(datetime.datetime.now().timestamp()) + 10}:R>\n'
+                                            'Please provide a usable number.', mention_author=False, delete_after=10)
                     return
 
                 output = ""
