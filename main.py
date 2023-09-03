@@ -6,7 +6,6 @@ import traceback
 import utils
 from discord.ext import commands
 
-# TODO update descriptions
 # TODO add admin or moderator role checks
 # TODO unify clear clean, remove by member messages
 # TODO add stats, add logs
