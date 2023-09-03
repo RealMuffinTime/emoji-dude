@@ -6,6 +6,7 @@ import traceback
 import utils
 from discord.ext import commands
 
+# TODO add version startup online since to help
 # TODO describe settings in command description
 # TODO unify clear clean, remove by member messages
 # TODO add stats, add logs

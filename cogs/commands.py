@@ -301,7 +301,9 @@ class Commands(commands.Cog):
 
                 aliases = f"Aliases: `{', '.join(command.aliases)}`\n"
 
-                syntax = f"Syntax: `{ctx.prefix}{command.name}{' ' + command.usage if command.usage is not None else ''}`"
+                syntax = ""
+                if parameter.lower() != "events":
+                    syntax = f"Syntax: `{ctx.prefix}{command.name}{' ' + command.usage if command.usage is not None else ''}`"
 
                 embed.add_field(
                     name="\u200b\n" + command.name + status,
@@ -318,7 +320,9 @@ class Commands(commands.Cog):
 
             aliases = f"Aliases: `{', '.join(command.aliases)}`\n"
 
-            syntax = f"Syntax: `{ctx.prefix}{command.name}{' ' + command.usage if command.usage is not None else ''}`"
+            syntax = ""
+            if command.cog_name.lower() != "events":
+                syntax = f"Syntax: `{ctx.prefix}{command.name}{' ' + command.usage if command.usage is not None else ''}`"
 
             embed.add_field(
                 name="\u200b\nDetails",
