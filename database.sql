@@ -12,7 +12,7 @@ CREATE TABLE IF NOT EXISTS `set_guilds` (
   `guild_id` bigint(18) NOT NULL,
   `auto_reaction_bool_enabled` tinyint(1) NOT NULL DEFAULT 0,
   `auto_poll_thread_creation_bool_enabled` tinyint(1) NOT NULL DEFAULT 0,
-  `backup_channel_bool_enabled` tinyint(1) NOT NULL DEFAULT 1,
+  `backup_channel_bool_enabled` tinyint(1) NOT NULL DEFAULT 0,
   `clean_bool_enabled` tinyint(1) NOT NULL DEFAULT 1,
   `clear_bool_enabled` tinyint(1) NOT NULL DEFAULT 1,
   `emojis_bool_enabled` tinyint(1) NOT NULL DEFAULT 1,

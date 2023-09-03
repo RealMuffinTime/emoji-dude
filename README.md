@@ -30,7 +30,7 @@ To run the bot yourself you need to set environment variables. As example: `BOT_
 ##### `ed.backupchannel`
 * Can be used to back up a channel to another one
 * `ed.backupchannel <from_channelid> <to_channelid>`, <br> as example: `ed.backupchannel 699947018562568223 699937067123212329`
-* (Currently, this command can be only used by bot creators)
+* (Currently, this command can be only used by bot creators, and is since disabled by default)
 
 ##### `ed.clean`
 * Cleans all messages affecting this bot
