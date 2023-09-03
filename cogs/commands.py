@@ -275,7 +275,8 @@ class Commands(commands.Cog):
                 commands_list = ""
 
                 for command in cog_commands:
-                    commands_list += f"**{command.name}** - *{command.description}*\n"
+                    description = command.description.split('\n')[0]
+                    commands_list += f"**{command.name}** - *{description}*\n"
 
                 embed.add_field(
                     name="\u200b\n" + cog,
