@@ -62,7 +62,7 @@ To run the bot yourself you need to set environment variables. As example: `BOT_
 
 ##### AutoReaction
 * The bot reacts to specific parts in a message with emotes.
-* Supported phrases are  `lol`, `poop` and `cool`.
+* Supported phrases are `cum`, `poop`,  `cool` and derivations.
 
 ##### ManagedAFK
 * Auto moves full muted users after specific amount of time to the guild set AFK channel.

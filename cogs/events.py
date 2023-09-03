@@ -6,8 +6,6 @@ from discord.ext import commands
 
 class Events(commands.Cog):
 
-    emojis = [["LOL", "lollipop", ["🍭"]], ["POOP", "poop", ["💩"]], ["COOL", "cool", ["🇨", "🇴", "🅾", "🇱"]]]
-
     def __init__(self, bot):
         self.bot = bot
 
@@ -86,16 +84,23 @@ class Events(commands.Cog):
                 pass
 
     @commands.command(name='AutoReaction', description='The bot reacts to specific parts in a message with emotes.\n'
-                                                       'Supported phrases are `lol`, `poop` and `cool`.')
+                                                       'Supported phrases are `cum`, `poop`,  `cool` and derivations.')
     async def auto_reaction_command(self, ctx):
         if isinstance(ctx, discord.Message):
             data = await utils.execute_sql(f"SELECT auto_reaction_bool_enabled FROM set_guilds WHERE guild_id ='{str(ctx.guild.id)}'", True)
             if data[0][0]:
                 if ctx.channel.permissions_for(ctx.guild.me).add_reactions and ctx.channel.permissions_for(ctx.guild.me).read_message_history:
-                    for emoji in Events.emojis:
-                        if emoji[0] in ctx.content.upper():
-                            for reaction in emoji[2]:
-                                await ctx.add_reaction(reaction)
+                    emojis = [
+                        ["cum", "komm", ["💦"]],
+                        ["shit", "poop", "scheiß", ["💩"]],
+                        ["cool", ["🇨", "🇴", "🅾", "🇱"]]
+                    ]
+
+                    for emoji in emojis:
+                        for text in emoji:
+                            if type(text) is str and text in ctx.content.lower():
+                                for reaction in emoji[-1]:
+                                    await ctx.add_reaction(reaction)
 
     @commands.command(name='ManagedAFK', description='Auto moves full muted users after a specific amount of time to the guild set AFK channel.\n'
                                                      'The last used channel is saved, so when a user is no longer full mute, he will be automatically moved to his last voice channel.\n'
