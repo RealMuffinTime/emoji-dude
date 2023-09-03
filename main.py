@@ -19,58 +19,31 @@ from discord.ext import commands
 # TODO optimize permission return
 # TODO bugfix emoji command ed.e :regional_indicator_e::a::regional_indicator_t::heavy_minus_sign::flag_my: :heavy_minus_sign::a::flag_ss: :heavy_minus_sign: 10
 
-bot = None
-cogs = None
-prefix = None
-version = None
+version = "2.3.0"
 
+bot = commands.Bot(
+    activity=discord.Streaming(
+        name="Happily this isn't shown, because then you would know, that this is a rick roll. :)",
+        details="nobody beats me in emoting",
+        url="https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+        type=discord.ActivityType.streaming),
+    case_insensitive=True,
+    command_prefix=['ed.'],
+    description='a emoji spamming dude',
+    intents=discord.Intents.all(),
+    owner_id=412235309204635649
+)
 
-def get_bot():
-    global bot
-    if bot is None:
-        bot = commands.Bot(
-            activity=discord.Streaming(
-                name="Happily this isn't shown, because then you would know, that this is a rick roll. :)",
-                details="nobody beats me in emoting",
-                url="https://www.youtube.com/watch?v=dQw4w9WgXcQ",
-                type=discord.ActivityType.streaming),
-            case_insensitive=True,
-            command_prefix=get_prefix(),
-            description='a emoji spamming dude',
-            intents=discord.Intents.all(),
-            owner_id=412235309204635649
-        )
-    return bot
-
-
-def get_cogs():
-    global cogs
-    if cogs is None:
-        cogs = ['cogs.commands', 'cogs.events']
-    return cogs
-
-
-def get_prefix():
-    global prefix
-    if prefix is None:
-        prefix = ['ed.']
-    return prefix
-
-
-def get_version():
-    global version
-    if version is None:
-        version = "2.3.0"
-    return version
+cogs = ['cogs.commands', 'cogs.events']
 
 
 async def main():
-    async with get_bot():
-        get_bot().remove_command('help')
-        for cog in get_cogs():
-            if get_bot().get_cog(type(cog).__name__) is None:
-                await get_bot().load_extension(cog)
-        await get_bot().start(os.environ['BOT_TOKEN'], reconnect=False)
+    async with bot:
+        bot.remove_command('help')
+        for cog in cogs:
+            if bot.get_cog(type(cog).__name__) is None:
+                await bot.load_extension(cog)
+        await bot.start(os.environ['BOT_TOKEN'], reconnect=False)
 
 
 async def check_afk():
@@ -81,7 +54,7 @@ async def check_afk():
         data = await utils.execute_sql(f"SELECT managed_afk_bool_enabled FROM set_guilds WHERE guild_id ='{afk_member[2]}'", True)
         if data[0][0]:
             if afk_member[4] == 0 and utils.get_curr_timestamp(True) - afk_member[1] >= datetime.timedelta(seconds=afk_member[3]):
-                last_guild = get_bot().get_guild(afk_member[2])
+                last_guild = bot.get_guild(afk_member[2])
                 member = await last_guild.fetch_member(afk_member[0])
                 if member.voice is None:
                     await utils.execute_sql(f"INSERT INTO set_users VALUES ('{member.id}', 0, 0, NULL, NULL, NULL) "
@@ -102,13 +75,14 @@ async def check_afk():
 
 async def cron():
     while True:
+        # SQL requests needed, to keep online status data
         await check_afk()
         await asyncio.sleep(30)
 
 
 async def update_guild_count():
     try:
-        guild_count = len(get_bot().guilds)
+        guild_count = len(bot.guilds)
         guild_count_db = len(await utils.execute_sql("SELECT * FROM stat_bot_guilds WHERE action = 'add';", True)) - len(
             await utils.execute_sql("SELECT * FROM stat_bot_guilds WHERE action = 'remove';", True))
         if guild_count < guild_count_db:
@@ -124,15 +98,14 @@ async def update_guild_count():
         utils.on_error("update_guild_count()", *trace)
 
 
-@get_bot().event
+@bot.event
 async def on_ready():
-    utils.log("info", f"Logged in as {str(get_bot().user)}, on version {get_version()}, in session {str(utils.session_id)}.")
-    for guild in get_bot().guilds:
+    utils.log("info", f"Logged in as {str(bot.user)}, on version {version}, in session {str(utils.session_id)}.")
+    for guild in bot.guilds:
         utils.log("info", f" - {guild.name} {guild.id}")
         await utils.execute_sql(f"INSERT IGNORE INTO set_guilds (guild_id) VALUES ('{guild.id}')", False)
-        await get_bot().get_cog("Events").managed_channel_command(guild)
+        await bot.get_cog("Events").managed_channel_command(guild)
     await update_guild_count()
     await cron()
-
 
 asyncio.run(main())

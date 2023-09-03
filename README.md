@@ -41,7 +41,7 @@ To run the bot yourself you need to set environment variables. As example: `BOT_
 * You can also reply to a message, then the bot deletes all messages up to the replied one.
 
 ##### `ed.emojis`
-* Sends many emojis, multipliable by 1-27 times
+* Sends many emojis, possible to be multiplied by 1-27 times
 * `ed.emojis <emoji combinations> <amount>`, as example: `ed.emojis 👾 21`
 * All emojis of Discord are supported, also custom ones and custom animated ones.
 * (If you don't have Nitro, you need to insert as following `:name_of_animated_emoji:`).
