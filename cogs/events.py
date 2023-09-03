@@ -91,9 +91,10 @@ class Events(commands.Cog):
             if data[0][0]:
                 if ctx.channel.permissions_for(ctx.guild.me).add_reactions and ctx.channel.permissions_for(ctx.guild.me).read_message_history:
                     emojis = [
-                        ["cum", "komm", ["💦"]],
+                        ["cum", "komm", "nut", ["💦"]],
                         ["shit", "poop", "scheiß", ["💩"]],
-                        ["cool", ["🇨", "🇴", "🅾", "🇱"]]
+                        ["cool", ["🇨", "🇴", "🅾", "🇱"]],
+                        ["cap", "kappe", ["🧢"]]
                     ]
 
                     for emoji in emojis:
