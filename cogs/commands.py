@@ -298,7 +298,7 @@ class Commands(commands.Cog):
                     if not enabled[0][0]:
                         status = " - *Disabled*"
 
-                description = f"Description: {command.description}\n"
+                description = f"{command.description}\n"
 
                 aliases = f"Aliases: `{', '.join(command.aliases)}`\n"
 
