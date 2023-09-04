@@ -284,6 +284,19 @@ class Commands(commands.Cog):
                     inline=False
                 )
 
+            version = self.bot.version
+            guilds = str(len(self.bot.guilds))
+            start = str(int(utils.get_start_timestamp(raw=True).timestamp()))
+            session = str(utils.session_id)
+            embed.add_field(
+                    name="\u200b\nSome Statistics",
+                    value=f"**Version** - *{version}*\n"
+                          f"**Guilds** - *{guilds}*\n"
+                          f"**Startup** - *<t:{start}:R>*\n"
+                          f"**Session** - *{session}*",
+                    inline=False
+                )
+
         elif parameter.lower() in lower_cogs:
             cog = self.bot.get_cog(cogs[lower_cogs.index(parameter.lower())])
             embed.title += f" - Category {cog.qualified_name}"
@@ -389,6 +402,8 @@ class Commands(commands.Cog):
             content = (f"**Help Command** - Dismissed <t:{int(datetime.datetime.now().timestamp()) + 10}:R>\n"
                        "Invalid category or command specified.")
             return content, None, 10
+
+        embed.add_field(name="", value=f"[{self.bot.user.display_name} in the web](https://bots.muffintime.tk/{self.bot.user.display_name.replace(' ', '%20')}/)", inline=False)
 
         return None, embed, None
 

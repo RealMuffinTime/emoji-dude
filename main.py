@@ -6,7 +6,6 @@ import traceback
 import utils
 from discord.ext import commands
 
-# TODO add version startup online since to help
 # TODO describe settings in command description
 # TODO unify clear clean, remove by member messages
 # TODO add stats, add logs
@@ -18,8 +17,6 @@ from discord.ext import commands
 # TODO good counting feature, count 1 2 4 8 15 16 23 42
 # TODO optimize permission return
 # TODO bugfix emoji command ed.e :regional_indicator_e::a::regional_indicator_t::heavy_minus_sign::flag_my: :heavy_minus_sign::a::flag_ss: :heavy_minus_sign: 10
-
-version = "2.3.0"
 
 bot = commands.Bot(
     activity=discord.Streaming(
@@ -33,6 +30,8 @@ bot = commands.Bot(
     intents=discord.Intents.all(),
     owner_id=412235309204635649
 )
+
+bot.version = "2.3.0"
 
 cogs = ['cogs.commands', 'cogs.events']
 
@@ -100,7 +99,7 @@ async def update_guild_count():
 
 @bot.event
 async def on_ready():
-    utils.log("info", f"Logged in as {str(bot.user)}, on version {version}, in session {str(utils.session_id)}.")
+    utils.log("info", f"Logged in as {str(bot.user)}, on version {bot.version}, in session {str(utils.session_id)}.")
     for guild in bot.guilds:
         utils.log("info", f" - {guild.name} {guild.id}")
         await utils.execute_sql(f"INSERT IGNORE INTO set_guilds (guild_id) VALUES ('{guild.id}')", False)
