@@ -101,7 +101,10 @@ class Events(commands.Cog):
                         for text in emoji:
                             if type(text) is str and text in ctx.content.lower():
                                 for reaction in emoji[-1]:
-                                    await ctx.add_reaction(reaction)
+                                    try:
+                                        await ctx.add_reaction(reaction)
+                                    except discord.errors.Forbidden:
+                                        pass
 
     @commands.command(name='ManagedAFK', description='Auto moves full muted users after a specific amount of time to the guild set AFK channel.\n'
                                                      'The last used channel is saved, so when a user is no longer full mute, he will be automatically moved to his last voice channel.\n'
