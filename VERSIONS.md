@@ -6,14 +6,14 @@
 ###### Changes
 - Added `cum`: 💦, `cap`: 🧢 and removed `lol`: 🍭 emojis in `AutoReaction`
 - Update descriptions of commands and events
-- Disable `backupchannel initially`
+- Disable `backupchannel` initially
 - Remove syntax in help page of `events` category 
 - Removed `clean` command, it got integrated into the `clear` command
 - Improved `clear` command logic and usability
 ###### Internal changes
 - Add internal `help` enabled check
-- Cleanup `main.py`
-- sort command definitions alphabetically
+- Clean up `main.py`
+- Sort command definitions alphabetically
 - Ignore forbidden error in emoji creation
 
 ### Version 2.3.0 - 2023-09-01
