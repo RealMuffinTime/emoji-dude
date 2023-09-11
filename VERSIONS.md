@@ -1,3 +1,21 @@
+### Version 2.4.0 - 2023-09-11
+###### New stuff
+- Some commands are now only accessible by admins only, or can have a specific moderators role for this
+- Add dismiss to temporary messages
+- Added some statistics to the base help page
+###### Changes
+- Added `cum`: 💦, `cap`: 🧢 and removed `lol`: 🍭 emojis in `AutoReaction`
+- Update descriptions of commands and events
+- Disable `backupchannel initially`
+- Remove syntax in help page of `events` category 
+- Removed `clean` command, it got integrated into the `clear` command
+- Improved `clear` command logic and usability
+###### Internal changes
+- Add internal `help` enabled check
+- Cleanup `main.py`
+- sort command definitions alphabetically
+- Ignore forbidden error in emoji creation
+
 ### Version 2.3.0 - 2023-09-01
 ###### New stuff
 - Add settings view to help page, all command settings can now be updated by the user!!!
