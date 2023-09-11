@@ -73,41 +73,11 @@ class Commands(commands.Cog):
             trace = traceback.format_exc().rstrip("\n").split("\n")
             utils.on_error("backup_channel_command()", *trace)
 
-    @commands.command(name="clean", description="Deletes all messages affecting this bot.")
-    async def clean_command(self, ctx):
-        try:
-            data = await utils.execute_sql(f"SELECT clean_bool_enabled FROM set_guilds WHERE guild_id ='{ctx.guild.id}'", True)
-            if data[0][0]:
-                if ctx.channel.permissions_for(ctx.guild.me).manage_messages and ctx.channel.permissions_for(ctx.guild.me).read_message_history is True:
-                    message = await ctx.reply(content="**Clean**\nDeleting...", mention_author=False)
-
-                    def check(m):
-                        if m == message:
-                            return False
-                        elif m.content.startswith("ed."):
-                            return True
-                        elif m.author == self.bot.user:
-                            return True
-                        else:
-                            return False
-
-                    deleted = await ctx.channel.purge(check=check)
-
-                    await message.edit(content=f"**Clean** - Dismissed <t:{int(datetime.datetime.now().timestamp()) + 10}:R>\n"
-                                               f"Deleted **{len(deleted) - 1}** message(s).", delete_after=10)
-                else:
-                    await ctx.reply(f"**Clean** - Dismissed <t:{int(datetime.datetime.now().timestamp()) + 10}:R>\n"
-                                    "Missing permission to delete messages.\n"
-                                    "Please provide the `Manage Messages` and `Read Message History` permission.", delete_after=10, mention_author=False)
-        except Exception:
-            trace = traceback.format_exc().rstrip("\n").split("\n")
-            utils.on_error("clean_command()", *trace)
-
     @commands.command(name="clear",
-                      description="Deletes a specific amount of messages.\n"
-                                  "You can also reply to a message, then the bot deletes all messages up to the replied one.",
-                      usage="<amount>")
-    async def clear_command(self, ctx, amount=None):
+                      description="Deletes messages up to a specific point, filtered by user, if given.\n"
+                                  "You need to reply to a message, then the bot deletes all messages up to the replied one.",
+                      usage="<user>", aliases=["clean"])
+    async def clear_command(self, ctx, member=None):
         try:
             data = await utils.execute_sql(f"SELECT clear_bool_enabled, clear_role_moderator FROM set_guilds WHERE guild_id ='{ctx.guild.id}'", True)
             enabled, moderator = data[0][0], data[0][1] if data[0][1] is not None else 0
@@ -115,31 +85,61 @@ class Commands(commands.Cog):
                 if ctx.channel.permissions_for(ctx.author).manage_messages or ctx.channel.permissions_for(
                         ctx.author).administrator or ctx.author.get_role(moderator) is not None:
                     if ctx.channel.permissions_for(ctx.guild.me).manage_messages and ctx.channel.permissions_for(ctx.guild.me).read_message_history is True:
+                        if member is not None:
+                            try:
+                                member = (await ctx.guild.fetch_member(member.strip("<>!@"))).id
+                            except:
+                                await ctx.reply(content=f"**Clear** - Dismissed <t:{int(datetime.datetime.now().timestamp()) + 10}:R>\n"
+                                                        "Invalid user specified.", delete_after=10, mention_author=False)
+                                return
+
                         if ctx.message.reference is not None and ctx.message.reference.resolved is not None and type(
                                 ctx.message.reference.resolved) == discord.Message:
-                            amount = 0
-                            async for message in ctx.channel.history():  # TODO incrementing search to be added
-                                if message == ctx.message.reference.resolved:
+                            bulk_messages = []
+                            slow_messages = []
+
+                            async for message in ctx.channel.history():  # TODO incrementing search to be added, current max is 99 messages
+                                if (member is None or (member is not None and (message.author.id == member or (message.content.startswith("ed.") and member == ctx.guild.me.id)))) and message != ctx.message:
+                                    if message.created_at > datetime.datetime.now(datetime.timezone.utc) - datetime.timedelta(days=14):
+                                        bulk_messages.append(message)
+                                    else:
+                                        slow_messages.append(message)
+                                if message == ctx.message.reference.resolved or discord.utils.snowflake_time(ctx.message.reference.message_id) >= discord.utils.snowflake_time(ctx.message.id):
+                                    last_message = None
                                     break
-                                amount += 1
+                                else:
+                                    last_message = message
                         else:
+                            await ctx.reply(content=f"**Clear** - Dismissed <t:{int(datetime.datetime.now().timestamp()) + 10}:R>\n"
+                                                    "Please reply to a message to select a limit.", delete_after=10, mention_author=False)
+                            return
+
+                        status_message = await ctx.reply(content="**Clear**\n"
+                                                                 f"Deleting **{len(bulk_messages)}** message{'s' if len(bulk_messages) > 1 or len(bulk_messages) == 0 else ''} in fast mode...\n"
+                                                                 f"Deleting **{len(slow_messages)}** message{'s' if len(slow_messages) > 1 or len(slow_messages) == 0 else ''} in slow mode...", mention_author=False)
+
+                        await ctx.channel.delete_messages(bulk_messages)
+
+                        await status_message.edit(content=f"**Clear**\n"
+                                                          f"Deleted **{len(bulk_messages)}** message{'s' if len(bulk_messages) > 1 or len(bulk_messages) == 0 else ''} in fast mode.\n"
+                                                          f"Deleting **{len(slow_messages)}** message{'s' if len(slow_messages) > 1 or len(slow_messages) == 0 else ''} in slow mode...", allowed_mentions=discord.AllowedMentions.none())
+
+                        for message in slow_messages:
                             try:
-                                amount = int(amount)
-                            except Exception:
-                                await ctx.reply(content=f"**Clear** - Dismissed <t:{int(datetime.datetime.now().timestamp()) + 10}:R>\n"
-                                                        "Incorrect command usage.", delete_after=10, mention_author=False)
-                                return
-                        message = await ctx.reply(content="**Clear**\nDeleting...", mention_author=False)
+                                await message.delete()
+                            except:
+                                pass
+                            if (slow_messages.index(message) + 1) % 5 == 0:
+                                await status_message.edit(content=f"**Clear**\n"
+                                                                  f"Deleted **{len(bulk_messages)}** message{'s' if len(bulk_messages) > 1 or len(bulk_messages) == 0 else ''} in fast mode.\n"
+                                                                  f"Deleted **{slow_messages.index(message) + 1}/{len(slow_messages)}** message{'s' if len(slow_messages) > 1 or len(slow_messages) == 0 else ''} in slow mode...\n"
+                                                                  f"Deleting in slow mode can take a long time because of Discord limitations.", allowed_mentions=discord.AllowedMentions.none())
 
-                        def is_clear_message(m):
-                            if m == message:
-                                return False
-                            return True
+                        await ctx.message.delete()
+                        await status_message.edit(content=f"**Clear** - Dismissed <t:{int(datetime.datetime.now().timestamp()) + 10}:R>\n"
+                                                          f"Deleted **{len(bulk_messages)}** message{'s' if len(bulk_messages) > 1 or len(bulk_messages) == 0 else ''} in fast mode.\n"
+                                                          f"Deleted **{len(slow_messages)}** message{'s' if len(slow_messages) > 1 or len(slow_messages) == 0 else ''} in slow mode.", delete_after=10, allowed_mentions=discord.AllowedMentions.none())
 
-                        deleted = await ctx.channel.purge(limit=amount + 2, check=is_clear_message, bulk=True)
-
-                        await message.edit(content=f"**Clear** - Dismissed <t:{int(datetime.datetime.now().timestamp()) + 10}:R>\n"
-                                           f"Deleted **{len(deleted) - 1}** message{'s' if len(deleted) - 1 > 1 else ''}.", delete_after=10)
                     else:
                         await ctx.reply(f"**Clear** - Dismissed <t:{int(datetime.datetime.now().timestamp()) + 10}:R>\n"
                                         "Missing permission to delete messages.\n"

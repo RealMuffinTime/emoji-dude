@@ -7,7 +7,6 @@ import utils
 from discord.ext import commands
 
 # TODO describe settings in command description
-# TODO unify clear clean, remove by member messages
 # TODO add stats, add logs
 # TODO slash commands
 # TODO change managed channel system

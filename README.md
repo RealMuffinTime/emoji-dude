@@ -31,12 +31,9 @@ To run the bot yourself you need to set environment variables. As example: `BOT_
 * Can be used to back up a channel to another one.
 * This command is initially disabled, since it is currently only available to bot creators.
 
-##### `ed.clean`
-* Deletes all messages affecting this bot.
-
-##### `ed.clear <amount>`
-* Deletes a specific amount of messages.
-* You can also reply to a message, then the bot deletes all messages up to the replied one.
+##### `ed.clear <user>`
+* Deletes messages up to a specific point, filtered by user, if given.
+* You need to reply to a message, then the bot deletes all messages up to the replied one.
 
 ##### `ed.emojis <emoji_combinations> <amount>`
 * Sends many emojis, possible to be multiplied by 1-27 times.
