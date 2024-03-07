@@ -69,4 +69,4 @@ To run the bot yourself you need to set environment variables. As example: `BOT_
 ##### ManagedChannel
 * Automatically creates voice channels when needed, and removes unused.
 
-*© 2020 - 2023*
+*© 2020 - 2024*
