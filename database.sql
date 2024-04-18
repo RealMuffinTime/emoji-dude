@@ -47,10 +47,24 @@ CREATE TABLE IF NOT EXISTS `set_users` (
 
 
 -- stat_bot_guilds
+CREATE TABLE IF NOT EXISTS `stat_bot_commands` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `timestamp` datetime NOT NULL DEFAULT curtime(),
+  `command` varchar(50) NOT NULL,
+  `status` varchar(50) NOT NULL,
+  `user_id` varchar(50) DEFAULT NULL,
+  `guild_id` varchar(50) DEFAULT NULL,
+
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+
+
+-- stat_bot_guilds
 CREATE TABLE IF NOT EXISTS `stat_bot_guilds` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
-  `action` varchar(50) NOT NULL,
   `timestamp` datetime NOT NULL DEFAULT curtime(),
+  `action` varchar(50) NOT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
