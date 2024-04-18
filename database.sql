@@ -46,7 +46,7 @@ CREATE TABLE IF NOT EXISTS `set_users` (
 
 
 
--- stat_bot_guilds
+-- stat_bot_commands
 CREATE TABLE IF NOT EXISTS `stat_bot_commands` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `timestamp` datetime NOT NULL DEFAULT curtime(),

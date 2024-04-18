@@ -7,14 +7,12 @@ import utils
 from discord.ext import commands
 
 # TODO use default user/channel select when discord.py release supports it
+# TODO slash commands
 # TODO describe settings in command description
 # TODO counting & word counting & good stats
-# TODO add stats, add logs
-# TODO slash commands
+# TODO add stats, add logs is wip
 # TODO change managed channel system
 # TODO managed_afk move entirely to events
-# TODO improve database structure
-# TODO good poll feature
 # TODO good counting feature, count 1 2 4 8 15 16 23 42
 # TODO optimize permission return
 # TODO bugfix emoji command ed.e :regional_indicator_e::a::regional_indicator_t::heavy_minus_sign::flag_my: :heavy_minus_sign::a::flag_ss: :heavy_minus_sign: 10

@@ -3,6 +3,7 @@ import datetime
 import discord
 import emoji as emojilib
 import traceback
+import unicodedata
 import utils
 from discord.ext import commands
 
@@ -189,12 +190,32 @@ class Commands(commands.Cog):
                                   "`<emoji_combinations>` can be just one, or multiple, but there must be no space between these emojis!\n"
                                   "You can reply to a previous message so the bot can reply to that message with these emojis.",
                       usage="<emoji_combinations> <amount>")
-    async def emojis_command(self, ctx, emoji_call="", amount=1):
+    async def emojis_command(self, ctx, *args):
         status = "ongoing"
         try:
             data = await utils.execute_sql(f"SELECT emojis_bool_enabled FROM set_guilds WHERE guild_id ='{ctx.guild.id}'", True)
             if data[0][0]:
-                emojis_split = emojilib.demojize(emoji_call).replace("<", "|").replace(">", "|").split("|")
+                emojis_args = []
+                for emoji_list in args:
+                    for emoji in list(emoji_list):
+                        emoji_name = unicodedata.name(emoji)
+                        if emoji_name.startswith("REGIONAL INDICATOR SYMBOL LETTER"):
+                            emoji = f":regional_indicator_{emoji_name.split(' ')[-1].lower()}:"
+                        emojis_args.append(emoji)
+
+                try:
+                    amount = int(args[-1])
+                    emojis_args.pop()
+                except ValueError:
+                    amount = 1
+
+
+                emojis = []
+                for emoji in emojis_args:
+                    emojis.append(emojilib.demojize(emoji))
+                emojis_str = "".join(emojis)
+                emojis_split = emojis_str.replace("<", "|").replace(">", "|").split("|")
+
                 i = 0
                 while i < len(emojis_split):
                     partial_emoji = discord.PartialEmoji.from_str(emojis_split[i])
@@ -212,23 +233,31 @@ class Commands(commands.Cog):
                         other_emoji_split = emojis_split[i].split(":")
                         j = 0
                         while j < len(other_emoji_split):
-                            emoji = discord.utils.get(ctx.guild.emojis, name=other_emoji_split[j])
-                            if emoji is None:
-                                emoji = discord.utils.get(self.bot.emojis, name=other_emoji_split[j])
+                            if not other_emoji_split[j].startswith("regional_indicator"):
+                                emoji = discord.utils.get(ctx.guild.emojis, name=other_emoji_split[j])
                                 if emoji is None:
-                                    emoji = emojilib.emojize(":" + other_emoji_split[j] + ":")
-                                    if emoji == ":" + other_emoji_split[j] + ":":
-                                        other_emoji_split[j] = ""
-                                        j += 1
-                                        continue
-                            other_emoji_split[j] = str(emoji)
+                                    emoji = discord.utils.get(self.bot.emojis, name=other_emoji_split[j])
+                                    if emoji is None:
+                                        emoji = emojilib.emojize(":" + other_emoji_split[j] + ":")
+                                        if emoji == ":" + other_emoji_split[j] + ":":
+                                            other_emoji_split[j] = ""
+                                            j += 1
+                                            continue
+                                other_emoji_split[j] = str(emoji)
+                            else:
+                                other_emoji_split[j] = ":" + other_emoji_split[j] + ":"
 
                             j += 1
 
                         emojis_split[i] = "".join(other_emoji_split)
                     i += 1
 
-                emojis = "".join(emojis_split)
+                emojis = ""
+                for emojis_splitter in emojis_split:
+                    if not len(emojis + emojis_splitter) > 2000:
+                        emojis += emojis_splitter
+                    else:
+                        break
 
                 if emojis == "":
                     await ctx.reply(f"**Emojis** - Dismissed <t:{int(datetime.datetime.now().timestamp()) + 10}:R>\n"
@@ -250,7 +279,10 @@ class Commands(commands.Cog):
                     if status != "fault":
                         output = ""
                         for i in range(amount):
-                            output += str(emojis) + " "
+                            if not len(output + emojis) > 2000:
+                                output += str(emojis)
+                            else:
+                                break
 
                         if ctx.channel.permissions_for(ctx.guild.me).manage_messages:
                             await ctx.message.delete()
