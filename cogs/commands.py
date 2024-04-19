@@ -16,8 +16,13 @@ class Commands(commands.Cog):
     @commands.command(name="ping", description="PONG! Pings and message round-trips.")
     async def ping_command(self, ctx):
         status = "ongoing"
+        guild_id = 0
         try:
-            data = await utils.execute_sql(f"SELECT ping_bool_enabled FROM set_guilds WHERE guild_id ='{ctx.guild.id}'", True)
+            if ctx.guild:
+                guild_id = ctx.guild.id
+                data = await utils.execute_sql(f"SELECT ping_bool_enabled FROM set_guilds WHERE guild_id ='{ctx.guild.id}'", True)
+            else:
+                data = [[True]]
             if data[0][0]:
                 start = datetime.datetime.now()
                 msg = await ctx.reply(content="**Ping?**", mention_author=False)
@@ -32,7 +37,7 @@ class Commands(commands.Cog):
             utils.on_error("ping_command()", *trace)
             status = "error"
 
-        await utils.stat_bot_commands("ping", status, ctx.author.id, ctx.guild.id)
+        await utils.stat_bot_commands("ping", status, ctx.author.id, guild_id)
 
     @commands.command(name="backupchannel",
                       description="Can be used to back up a channel to another one.\n" 
@@ -40,58 +45,65 @@ class Commands(commands.Cog):
                       usage="<from_channel_id> <to_channel_id>")
     async def backup_channel_command(self, ctx):
         status = "ongoing"
+        guild_id  = 0
         try:
-            data = await utils.execute_sql(f"SELECT backup_channel_bool_enabled, backup_channel_role_moderator FROM set_guilds WHERE guild_id ='{ctx.guild.id}'", True)
-            enabled, moderator = data[0][0], data[0][1] if data[0][1] is not None else 0
-            if enabled:
-                if ctx.author.id == 412235309204635649:
-                    content = ctx.message.content.split(" ")
-                    from_channel, to_channel = None, None
-                    try:
-                        from_channel = ctx.guild.get_channel(int(content[1]))
-                        to_channel = ctx.guild.get_channel(int(content[2]))
-                    except Exception as e:
-                        await ctx.reply(f"**BackupChannel** - Dismissed <t:{int(datetime.datetime.now().timestamp()) + 10}:R>\n"
-                                        "Invalid channels.", mention_author=False, delete_after=10)
-                        status = "fault"
+            if ctx.guild:
+                guild_id = ctx.guild.id
+                data = await utils.execute_sql(f"SELECT backup_channel_bool_enabled, backup_channel_role_moderator FROM set_guilds WHERE guild_id ='{ctx.guild.id}'", True)
+                enabled, moderator = data[0][0], data[0][1] if data[0][1] is not None else 0
+                if enabled:
+                    if ctx.author.id == 412235309204635649:
+                        content = ctx.message.content.split(" ")
+                        from_channel, to_channel = None, None
+                        try:
+                            from_channel = ctx.guild.get_channel(int(content[1]))
+                            to_channel = ctx.guild.get_channel(int(content[2]))
+                        except Exception as e:
+                            await ctx.reply(f"**BackupChannel** - Dismissed <t:{int(datetime.datetime.now().timestamp()) + 10}:R>\n"
+                                            "Invalid channels.", mention_author=False, delete_after=10)
+                            status = "fault"
 
-                    if from_channel and to_channel:
-                        if (from_channel.permissions_for(ctx.author).manage_messages and to_channel.permissions_for(ctx.author).manage_messages) or ctx.channel.permissions_for(ctx.author).administrator or ctx.author.get_role(moderator):
-                            if len(content) == 3:
-                                status = "success"
-                                status_message = await ctx.reply(f"**BackupChannel**\nBeginning backup from <#{from_channel.id}> to <#{to_channel.id}>.\nSearching for messages...", mention_author=False)
-                                backup_messages = [message async for message in from_channel.history(limit=None, oldest_first=True)]
+                        if from_channel and to_channel:
+                            if (from_channel.permissions_for(ctx.author).manage_messages and to_channel.permissions_for(ctx.author).manage_messages) or ctx.channel.permissions_for(ctx.author).administrator or ctx.author.get_role(moderator):
+                                if len(content) == 3:
+                                    status = "success"
+                                    status_message = await ctx.reply(f"**BackupChannel**\nBeginning backup from <#{from_channel.id}> to <#{to_channel.id}>.\nSearching for messages...", mention_author=False)
+                                    backup_messages = [message async for message in from_channel.history(limit=None, oldest_first=True)]
 
-                                await status_message.edit(content=f"**BackupChannel**\nBeginning backup of <#{from_channel.id}> to <#{to_channel.id}>.\nFound {len(backup_messages)} messages.")
+                                    await status_message.edit(content=f"**BackupChannel**\nBeginning backup of <#{from_channel.id}> to <#{to_channel.id}>.\nFound {len(backup_messages)} messages.")
 
-                                for message in backup_messages:
-                                    timestamp = int(message.created_at.timestamp())
-                                    if message.edited_at is not None:
-                                        timestamp = int(message.edited_at.timestamp())
+                                    for message in backup_messages:
+                                        timestamp = int(message.created_at.timestamp())
+                                        if message.edited_at is not None:
+                                            timestamp = int(message.edited_at.timestamp())
 
-                                    allowed_mentions = discord.AllowedMentions().none()
-                                    await to_channel.send(f"--- At <t:{timestamp}:f> wrote <@!{message.author.id}> ---", allowed_mentions=allowed_mentions)
-                                    await to_channel.send(message.content, allowed_mentions=allowed_mentions)
+                                        allowed_mentions = discord.AllowedMentions().none()
+                                        await to_channel.send(f"--- At <t:{timestamp}:f> wrote <@!{message.author.id}> ---", allowed_mentions=allowed_mentions)
+                                        await to_channel.send(message.content, allowed_mentions=allowed_mentions)
+                                else:
+                                    await ctx.reply(f"**BackupChannel** - Dismissed <t:{int(datetime.datetime.now().timestamp()) + 10}:R>\n"
+                                                    "Invalid input.", mention_author=False, delete_after=10)
+                                    status = "fault"
                             else:
                                 await ctx.reply(f"**BackupChannel** - Dismissed <t:{int(datetime.datetime.now().timestamp()) + 10}:R>\n"
-                                                "Invalid input.", mention_author=False, delete_after=10)
+                                                "You have no permission for these channels.", mention_author=False, delete_after=10)
                                 status = "fault"
-                        else:
-                            await ctx.reply(f"**BackupChannel** - Dismissed <t:{int(datetime.datetime.now().timestamp()) + 10}:R>\n"
-                                            "You have no permission for these channels.", mention_author=False, delete_after=10)
-                            status = "fault"
+                    else:
+                        await ctx.reply(f"**BackupChannel** - Dismissed <t:{int(datetime.datetime.now().timestamp()) + 10}:R>\n"
+                                        "You are not an author of this bot.", delete_after=10, mention_author=False)
+                        status = "fault"
                 else:
-                    await ctx.reply(f"**BackupChannel** - Dismissed <t:{int(datetime.datetime.now().timestamp()) + 10}:R>\n"
-                                    "You are not an author of this bot.", delete_after=10, mention_author=False)
-                    status = "fault"
+                    return
             else:
-                return
+                await ctx.reply(f"**BackupChannel** - Dismissed <t:{int(datetime.datetime.now().timestamp()) + 10}:R>\n"
+                                "This command does not work in DMs.", delete_after=10, mention_author=False)
+                status = "fault"
         except Exception:
             trace = traceback.format_exc().rstrip("\n").split("\n")
             utils.on_error("backup_channel_command()", *trace)
             status = "error"
 
-        await utils.stat_bot_commands("backup_channel", status, ctx.author.id, ctx.guild.id)
+        await utils.stat_bot_commands("backup_channel", status, ctx.author.id, guild_id)
 
     @commands.command(name="clear",
                       description="Deletes messages up to a specific point, filtered by user, if given.\n"
@@ -99,89 +111,96 @@ class Commands(commands.Cog):
                       usage="<user>", aliases=["clean"])
     async def clear_command(self, ctx, member=None):
         status = "ongoing"
+        guild_id = 0
         try:
-            data = await utils.execute_sql(f"SELECT clear_bool_enabled, clear_role_moderator FROM set_guilds WHERE guild_id ='{ctx.guild.id}'", True)
-            enabled, moderator = data[0][0], data[0][1] if data[0][1] is not None else 0
-            if enabled:
-                if ctx.channel.permissions_for(ctx.author).manage_messages or ctx.channel.permissions_for(
-                        ctx.author).administrator or ctx.author.get_role(moderator) is not None:
-                    if ctx.channel.permissions_for(ctx.guild.me).manage_messages and ctx.channel.permissions_for(ctx.guild.me).read_message_history is True:
-                        if member is not None:
-                            try:
-                                member = (await ctx.guild.fetch_member(member.strip("<>!@"))).id
-                            except:
-                                await ctx.reply(content=f"**Clear** - Dismissed <t:{int(datetime.datetime.now().timestamp()) + 10}:R>\n"
-                                                        "Invalid user specified.", delete_after=10, mention_author=False)
-                                status = "fault"
-
-                        if status != "fault":
-                            if ctx.message.reference is not None and ctx.message.reference.resolved is not None and type(
-                                    ctx.message.reference.resolved) == discord.Message:
-                                bulk_messages = []
-                                slow_messages = []
-
-                                async for message in ctx.channel.history():  # TODO incrementing search to be added, current max is 99 messages
-                                    if (member is None or (member is not None and (message.author.id == member or (message.content.startswith("ed.") and member == ctx.guild.me.id)))) and message != ctx.message:
-                                        if message.created_at > datetime.datetime.now(datetime.timezone.utc) - datetime.timedelta(days=14):
-                                            bulk_messages.append(message)
-                                        else:
-                                            slow_messages.append(message)
-                                    if message == ctx.message.reference.resolved or discord.utils.snowflake_time(ctx.message.reference.message_id) >= discord.utils.snowflake_time(ctx.message.id):
-                                        last_message = None
-                                        break
-                                    else:
-                                        last_message = message
-                            else:
-                                await ctx.reply(content=f"**Clear** - Dismissed <t:{int(datetime.datetime.now().timestamp()) + 10}:R>\n"
-                                                        "Please reply to a message to select a limit.", delete_after=10, mention_author=False)
-                                status = "fault"
+            if ctx.guild:
+                guild_id = ctx.guild.id
+                data = await utils.execute_sql(f"SELECT clear_bool_enabled, clear_role_moderator FROM set_guilds WHERE guild_id ='{ctx.guild.id}'", True)
+                enabled, moderator = data[0][0], data[0][1] if data[0][1] is not None else 0
+                if enabled:
+                    if ctx.channel.permissions_for(ctx.author).manage_messages or ctx.channel.permissions_for(
+                            ctx.author).administrator or ctx.author.get_role(moderator) is not None:
+                        if ctx.channel.permissions_for(ctx.guild.me).manage_messages and ctx.channel.permissions_for(ctx.guild.me).read_message_history is True:
+                            if member is not None:
+                                try:
+                                    member = (await ctx.guild.fetch_member(member.strip("<>!@"))).id
+                                except:
+                                    await ctx.reply(content=f"**Clear** - Dismissed <t:{int(datetime.datetime.now().timestamp()) + 10}:R>\n"
+                                                            "Invalid user specified.", delete_after=10, mention_author=False)
+                                    status = "fault"
 
                             if status != "fault":
-                                status_message = await ctx.reply(content="**Clear**\n"
-                                                                         f"Deleting **{len(bulk_messages)}** message{'s' if len(bulk_messages) > 1 or len(bulk_messages) == 0 else ''} in fast mode...\n"
-                                                                         f"Deleting **{len(slow_messages)}** message{'s' if len(slow_messages) > 1 or len(slow_messages) == 0 else ''} in slow mode...", mention_author=False)
+                                if ctx.message.reference is not None and ctx.message.reference.resolved is not None and type(
+                                        ctx.message.reference.resolved) == discord.Message:
+                                    bulk_messages = []
+                                    slow_messages = []
 
-                                await ctx.channel.delete_messages(bulk_messages)
+                                    async for message in ctx.channel.history():  # TODO incrementing search to be added, current max is 99 messages
+                                        if (member is None or (member is not None and (message.author.id == member or (message.content.startswith("ed.") and member == ctx.guild.me.id)))) and message != ctx.message:
+                                            if message.created_at > datetime.datetime.now(datetime.timezone.utc) - datetime.timedelta(days=14):
+                                                bulk_messages.append(message)
+                                            else:
+                                                slow_messages.append(message)
+                                        if message == ctx.message.reference.resolved or discord.utils.snowflake_time(ctx.message.reference.message_id) >= discord.utils.snowflake_time(ctx.message.id):
+                                            last_message = None
+                                            break
+                                        else:
+                                            last_message = message
+                                else:
+                                    await ctx.reply(content=f"**Clear** - Dismissed <t:{int(datetime.datetime.now().timestamp()) + 10}:R>\n"
+                                                            "Please reply to a message to select a limit.", delete_after=10, mention_author=False)
+                                    status = "fault"
 
-                                await status_message.edit(content=f"**Clear**\n"
-                                                                  f"Deleted **{len(bulk_messages)}** message{'s' if len(bulk_messages) > 1 or len(bulk_messages) == 0 else ''} in fast mode.\n"
-                                                                  f"Deleting **{len(slow_messages)}** message{'s' if len(slow_messages) > 1 or len(slow_messages) == 0 else ''} in slow mode...", allowed_mentions=discord.AllowedMentions.none())
+                                if status != "fault":
+                                    status_message = await ctx.reply(content="**Clear**\n"
+                                                                             f"Deleting **{len(bulk_messages)}** message{'s' if len(bulk_messages) > 1 or len(bulk_messages) == 0 else ''} in fast mode...\n"
+                                                                             f"Deleting **{len(slow_messages)}** message{'s' if len(slow_messages) > 1 or len(slow_messages) == 0 else ''} in slow mode...", mention_author=False)
 
-                                for message in slow_messages:
-                                    try:
-                                        await message.delete()
-                                    except:
-                                        pass
-                                    if (slow_messages.index(message) + 1) % 5 == 0:
-                                        await status_message.edit(content=f"**Clear**\n"
-                                                                          f"Deleted **{len(bulk_messages)}** message{'s' if len(bulk_messages) > 1 or len(bulk_messages) == 0 else ''} in fast mode.\n"
-                                                                          f"Deleted **{slow_messages.index(message) + 1}/{len(slow_messages)}** message{'s' if len(slow_messages) > 1 or len(slow_messages) == 0 else ''} in slow mode...\n"
-                                                                          f"Deleting in slow mode can take a long time because of Discord limitations.", allowed_mentions=discord.AllowedMentions.none())
+                                    await ctx.channel.delete_messages(bulk_messages)
 
-                                await ctx.message.delete()
-                                await status_message.edit(content=f"**Clear** - Dismissed <t:{int(datetime.datetime.now().timestamp()) + 10}:R>\n"
-                                                                  f"Deleted **{len(bulk_messages)}** message{'s' if len(bulk_messages) > 1 or len(bulk_messages) == 0 else ''} in fast mode.\n"
-                                                                  f"Deleted **{len(slow_messages)}** message{'s' if len(slow_messages) > 1 or len(slow_messages) == 0 else ''} in slow mode.", delete_after=10, allowed_mentions=discord.AllowedMentions.none())
-                                status = "success"
+                                    await status_message.edit(content=f"**Clear**\n"
+                                                                      f"Deleted **{len(bulk_messages)}** message{'s' if len(bulk_messages) > 1 or len(bulk_messages) == 0 else ''} in fast mode.\n"
+                                                                      f"Deleting **{len(slow_messages)}** message{'s' if len(slow_messages) > 1 or len(slow_messages) == 0 else ''} in slow mode...", allowed_mentions=discord.AllowedMentions.none())
 
+                                    for message in slow_messages:
+                                        try:
+                                            await message.delete()
+                                        except:
+                                            pass
+                                        if (slow_messages.index(message) + 1) % 5 == 0:
+                                            await status_message.edit(content=f"**Clear**\n"
+                                                                              f"Deleted **{len(bulk_messages)}** message{'s' if len(bulk_messages) > 1 or len(bulk_messages) == 0 else ''} in fast mode.\n"
+                                                                              f"Deleted **{slow_messages.index(message) + 1}/{len(slow_messages)}** message{'s' if len(slow_messages) > 1 or len(slow_messages) == 0 else ''} in slow mode...\n"
+                                                                              f"Deleting in slow mode can take a long time because of Discord limitations.", allowed_mentions=discord.AllowedMentions.none())
+
+                                    await ctx.message.delete()
+                                    await status_message.edit(content=f"**Clear** - Dismissed <t:{int(datetime.datetime.now().timestamp()) + 10}:R>\n"
+                                                                      f"Deleted **{len(bulk_messages)}** message{'s' if len(bulk_messages) > 1 or len(bulk_messages) == 0 else ''} in fast mode.\n"
+                                                                      f"Deleted **{len(slow_messages)}** message{'s' if len(slow_messages) > 1 or len(slow_messages) == 0 else ''} in slow mode.", delete_after=10, allowed_mentions=discord.AllowedMentions.none())
+                                    status = "success"
+
+                        else:
+                            await ctx.reply(f"**Clear** - Dismissed <t:{int(datetime.datetime.now().timestamp()) + 10}:R>\n"
+                                            "Missing permission to delete messages.\n"
+                                            "Please provide the `Manage Messages` and `Read Message History` permission.", delete_after=10, mention_author=False)
+                            status = "fault"
                     else:
                         await ctx.reply(f"**Clear** - Dismissed <t:{int(datetime.datetime.now().timestamp()) + 10}:R>\n"
-                                        "Missing permission to delete messages.\n"
-                                        "Please provide the `Manage Messages` and `Read Message History` permission.", delete_after=10, mention_author=False)
+                                        "You dont have permissions to delete messages.", delete_after=10, mention_author=False)
                         status = "fault"
                 else:
-                    await ctx.reply(f"**Clear** - Dismissed <t:{int(datetime.datetime.now().timestamp()) + 10}:R>\n"
-                                    "You dont have permissions to delete messages.", delete_after=10, mention_author=False)
-                    status = "fault"
+                    return
             else:
-                return
+                await ctx.reply(f"**Clear** - Dismissed <t:{int(datetime.datetime.now().timestamp()) + 10}:R>\n"
+                                "This command does not work in DMs.", delete_after=10, mention_author=False)
+                status = "fault"
 
         except Exception:
             trace = traceback.format_exc().rstrip("\n").split("\n")
             utils.on_error("clear_command()", *trace)
             status = "error"
 
-        await utils.stat_bot_commands("clear", status, ctx.author.id, ctx.guild.id)
+        await utils.stat_bot_commands("clear", status, ctx.author.id, guild_id)
 
     @commands.command(name="emojis", aliases=["e"],
                       description="Sends many emojis, possible to be multiplied by 1-27 times.\n"
@@ -192,8 +211,16 @@ class Commands(commands.Cog):
                       usage="<emoji_combinations> <amount>")
     async def emojis_command(self, ctx, *args):
         status = "ongoing"
+        guild_id = 0
         try:
-            data = await utils.execute_sql(f"SELECT emojis_bool_enabled FROM set_guilds WHERE guild_id ='{ctx.guild.id}'", True)
+            if ctx.guild:
+                guild_id = ctx.guild.id
+                data = await utils.execute_sql(f"SELECT emojis_bool_enabled FROM set_guilds WHERE guild_id ='{ctx.guild.id}'", True)
+                user = ctx.guild.me
+            else:
+                data = [[True]]
+                user = ctx.channel.me
+
             if data[0][0]:
                 emojis_args = []
                 for emoji_list in args:
@@ -220,7 +247,10 @@ class Commands(commands.Cog):
                 while i < len(emojis_split):
                     partial_emoji = discord.PartialEmoji.from_str(emojis_split[i])
                     if str(partial_emoji) != str(emojis_split[i]):
-                        emoji = discord.utils.get(ctx.guild.emojis, id=partial_emoji.id)
+                        if ctx.guild:
+                            emoji = discord.utils.get(ctx.guild.emojis, id=partial_emoji.id)
+                        else:
+                            emoji = None
                         if emoji is None:
                             emoji = discord.utils.get(self.bot.emojis, id=partial_emoji.id)
                             if emoji is None:
@@ -234,7 +264,10 @@ class Commands(commands.Cog):
                         j = 0
                         while j < len(other_emoji_split):
                             if not other_emoji_split[j].startswith("regional_indicator"):
-                                emoji = discord.utils.get(ctx.guild.emojis, name=other_emoji_split[j])
+                                if ctx.guild:
+                                    emoji = discord.utils.get(ctx.guild.emojis, name=other_emoji_split[j])
+                                else:
+                                    emoji = None
                                 if emoji is None:
                                     emoji = discord.utils.get(self.bot.emojis, name=other_emoji_split[j])
                                     if emoji is None:
@@ -284,7 +317,7 @@ class Commands(commands.Cog):
                             else:
                                 break
 
-                        if ctx.channel.permissions_for(ctx.guild.me).manage_messages:
+                        if ctx.channel.permissions_for(user).manage_messages:
                             await ctx.message.delete()
                         if ctx.message.reference is not None and ctx.message.reference.resolved is not None and type(ctx.message.reference.resolved) == discord.Message:
                             await ctx.message.reference.resolved.reply(output)
@@ -298,7 +331,7 @@ class Commands(commands.Cog):
             utils.on_error("emojis_command()", *trace)
             status = "error"
 
-        await utils.stat_bot_commands("emojis", status, ctx.author.id, ctx.guild.id)
+        await utils.stat_bot_commands("emojis", status, ctx.author.id, guild_id)
 
     @commands.command(name="help",
                       description="Shows a help menu with categorys and their commands.\n"
@@ -308,8 +341,13 @@ class Commands(commands.Cog):
                       aliases=["commands", "command", "settings", "setting"], usage="<category/command>")
     async def help_command(self, ctx, parameter=None):
         status = "ongoing"
+        guild_id = 0
         try:
-            data = await utils.execute_sql(f"SELECT help_ignore_enabled FROM set_guilds WHERE guild_id ='{ctx.guild.id}'", True)
+            if ctx.guild:
+                guild_id = ctx.guild.id
+                data = await utils.execute_sql(f"SELECT help_ignore_enabled FROM set_guilds WHERE guild_id ='{ctx.guild.id}'", True)
+            else:
+                data = [[True]]
             if data[0][0]:
                 content, embed, delete, status = await self.generate_help_text(ctx, parameter)
                 view = await self.generate_help_view(ctx, parameter)
@@ -325,18 +363,18 @@ class Commands(commands.Cog):
             utils.on_error("help_command()", *trace)
             status = "error"
 
-        await utils.stat_bot_commands("help", status, ctx.author.id, ctx.guild.id)
+        await utils.stat_bot_commands("help", status, ctx.author.id, guild_id)
 
     async def generate_help_text(self, ctx, parameter):
         status = "ongoing"
-        if str(ctx.channel.type) == "private":
-            color = discord.Colour.random()
-        else:
+        if ctx.guild:
             if ctx.channel.permissions_for(ctx.author.guild.me).embed_links is False:
                 content = (f"**Help Command** - Dismissed <t:{int(datetime.datetime.now().timestamp()) + 10}:R>\n"
                            f"I don't have permission to use embed messages.\nPlease provide the `Embed Links` permission.")
                 return content, None, 10, "fault"
             color = ctx.channel.guild.me.color.value
+        else:
+            color = discord.Colour.random()
 
         embed = discord.Embed(color=color)
 
@@ -737,27 +775,34 @@ class Commands(commands.Cog):
                                   "Why do I keep it then?")
     async def screenshare_command(self, ctx):
         status = "ongoing"
+        guild_id = 0
         try:
-            data = await utils.execute_sql(f"SELECT screenshare_bool_enabled FROM set_guilds WHERE guild_id ='{ctx.guild.id}'", True)
-            if data[0][0]:
-                if ctx.author.voice:
-                    channel = ctx.author.voice.channel
-                    await ctx.reply(f"**Screenshare**\n"
-                                    f"If you want to share your screen in <#{channel.id}>, use this link:\n"
-                                    f"<https://discordapp.com/channels/{ctx.guild.id}/{channel.id}/>", mention_author=False)
-                    status = "success"
+            if ctx.guild:
+                guild_id = ctx.guild.id
+                data = await utils.execute_sql(f"SELECT screenshare_bool_enabled FROM set_guilds WHERE guild_id ='{ctx.guild.id}'", True)
+                if data[0][0]:
+                    if ctx.author.voice:
+                        channel = ctx.author.voice.channel
+                        await ctx.reply(f"**Screenshare**\n"
+                                        f"If you want to share your screen in <#{channel.id}>, use this link:\n"
+                                        f"<https://discordapp.com/channels/{ctx.guild.id}/{channel.id}/>", mention_author=False)
+                        status = "success"
+                    else:
+                        await ctx.reply(f"**Screenshare** - Dismissed <t:{int(datetime.datetime.now().timestamp()) + 10}:R>\n"
+                                        "You are not in a voice channel!", mention_author=False, delete_after=10)
+                        status = "fault"
                 else:
-                    await ctx.reply(f"**Screenshare** - Dismissed <t:{int(datetime.datetime.now().timestamp()) + 10}:R>\n"
-                                    "You are not in a voice channel!", mention_author=False, delete_after=10)
-                    status = "fault"
+                    return
             else:
-                return
+                await ctx.reply(f"**BackupChannel** - Dismissed <t:{int(datetime.datetime.now().timestamp()) + 10}:R>\n"
+                                "This command does not work in DMs.", delete_after=10, mention_author=False)
+                status = "fault"
         except Exception:
             trace = traceback.format_exc().rstrip("\n").split("\n")
             utils.on_error("screenshare_command()", *trace)
             status = "error"
 
-        await utils.stat_bot_commands("screenshare", status, ctx.author.id, ctx.guild.id)
+        await utils.stat_bot_commands("screenshare", status, ctx.author.id, guild_id)
 
 
 async def setup(bot):

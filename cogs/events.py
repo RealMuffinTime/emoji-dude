@@ -66,16 +66,22 @@ class Events(commands.Cog):
             try:
                 webhook_id = int(raw_data['webhook_id'])
                 content = raw_data['content']
-                guild_id = int(raw_data['guild_id'])
-                channel_id = int(raw_data['channel_id'])
-                message_id = int(raw_data['id'])
-                guild = self.bot.get_guild(guild_id)
-                channel = guild.get_channel(channel_id)
-                data = await utils.execute_sql(f"SELECT auto_poll_thread_creation_bool_enabled FROM set_guilds WHERE guild_id ='{guild_id}'", True)
+                channel_id = ctx.channel_id
+                message_id = ctx.message_id
+                guild_id = ctx.guild_id
+                if guild_id:
+                    guild = self.bot.get_guild(guild_id)
+                    channel = guild.get_channel(channel_id)
+                    user = guild.me
+                    data = await utils.execute_sql(f"SELECT auto_poll_thread_creation_bool_enabled FROM set_guilds WHERE guild_id ='{guild_id}'", True)
+                else:
+                    data = [[True]]
+                    channel = self.bot.get_channel(channel_id)
+                    user = channel.me
                 if data[0][0]:
                     message = await channel.fetch_message(message_id)
                     if webhook_id == 324631108731928587:
-                        if channel.permissions_for(guild.me).create_public_threads and channel.permissions_for(guild.me).read_message_history:
+                        if channel.permissions_for(user).create_public_threads and channel.permissions_for(user).read_message_history:
                             thread = await message.create_thread(
                                 name=message.clean_content.replace("*", "").replace(":bar_chart: ", ""),
                                 auto_archive_duration=1440)
@@ -87,9 +93,14 @@ class Events(commands.Cog):
                                                        'Supported phrases are `cum`, `poop`,  `cool` and derivations.')
     async def auto_reaction_command(self, ctx):
         if isinstance(ctx, discord.Message):
-            data = await utils.execute_sql(f"SELECT auto_reaction_bool_enabled FROM set_guilds WHERE guild_id ='{str(ctx.guild.id)}'", True)
+            if ctx.guild:
+                data = await utils.execute_sql(f"SELECT auto_reaction_bool_enabled FROM set_guilds WHERE guild_id ='{str(ctx.guild.id)}'", True)
+                user = ctx.guild.me
+            else:
+                data = [[True]]
+                user = ctx.channel.me
             if data[0][0]:
-                if ctx.channel.permissions_for(ctx.guild.me).add_reactions and ctx.channel.permissions_for(ctx.guild.me).read_message_history:
+                if ctx.channel.permissions_for(user).add_reactions and ctx.channel.permissions_for(user).read_message_history:
                     emojis = [
                         ["cum", "komm", "nut", ["💦"]],
                         ["shit", "poop", "scheiß", ["💩"]],
