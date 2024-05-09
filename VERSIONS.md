@@ -1,4 +1,4 @@
-### Version 2.4.0 - 2023-09-11
+### Version [2.4.0](https://github.com/RealMuffinTime/emoji-dude/releases/tag/v2.4.0) - 2023-09-11
 ###### New stuff
 - Some commands are now only accessible by admins only, or can have a specific moderators role for this
 - Add dismiss to temporary messages
@@ -16,7 +16,7 @@
 - Sort command definitions alphabetically
 - Ignore forbidden error in emoji creation
 
-### Version 2.3.0 - 2023-09-01
+### Version [2.3.0](https://github.com/RealMuffinTime/emoji-dude/releases/tag/v2.3.0) - 2023-09-01
 ###### New stuff
 - Add settings view to help page, all command settings can now be updated by the user!!!
 ###### Changes
@@ -27,12 +27,12 @@
 - Store secrets in environment variables
 - Create log folder automatically
 
-### Version 2.2.1 - 2023-07-27
+### Version [2.2.1](https://github.com/RealMuffinTime/emoji-dude/releases/tag/v2.2.1) - 2023-07-27
 ###### Changes
 - Improvements to the logging of the online status
 - Added join/leave messages for guild `669895353557975080`
 
-### Version 2.2.0 - 2023-03-28
+### Version [2.2.0](https://github.com/RealMuffinTime/emoji-dude/releases/tag/v2.2.0) - 2023-03-28
 ###### New stuff
 - `clear` command deletes messages up to a replied message on command usage
 - The bot shows now a reply to messages
@@ -40,7 +40,7 @@
 - Massive update to the `emojis` command
 - Add permission check for clean and clear command
 
-### Version 2.1.0 - 2023-02-23
+### Version [2.1.0](https://github.com/RealMuffinTime/emoji-dude/releases/tag/v2.1.0) - 2023-02-23
 ###### New stuff
 - Settings are now available, settings got integrated into the `help` command
 - The `help` command shows now also info to specific commands, there are also the settings located
@@ -51,11 +51,11 @@
 - `managedafk` add permission check
 - internal changes to `managedchannel`
 
-### Version 2.0.1 - 2022-09-20
+### Version [2.0.1](https://github.com/RealMuffinTime/emoji-dude/releases/tag/v2.0.1) - 2022-09-20
 ###### Changes
 - Added a check for running managed_channels only once at a time
 
-### Version 2.0.0 - 2022-09-14
+### Version [2.0.0](https://github.com/RealMuffinTime/emoji-dude/releases/tag/v2.0.0) - 2022-09-14
 ###### New stuff
 - User gets not afk managed when stream or video active
 - Managed channel adds new channel under last current existing
@@ -66,7 +66,7 @@
 - Multiple reworks of afk management
 - (error) logging optimization
 
-### Version 1.1.0 - 2022-04-14
+### Version [1.1.0](https://github.com/RealMuffinTime/emoji-dude/releases/tag/v1.1.0) - 2022-04-14
 ###### New stuff
 - Added afk management
 - Added database support
@@ -78,7 +78,7 @@
 - Rework of cogs
 - Overall improvements
 
-### Version 1.0.2 - 2021-12-17
+### Version [1.0.2](https://github.com/RealMuffinTime/emoji-dude/releases/tag/v1.0.2) - 2021-12-17
 ###### New stuff
 - Added a limit in `ed.clear <limit>`, you can now specify the amount of messages to delete
 - Adds :billed_cap: on every message of user with id 443404465928667137
