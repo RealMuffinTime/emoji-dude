@@ -6,7 +6,6 @@ import traceback
 import utils
 from discord.ext import commands
 
-# TODO use default user/channel select when discord.py release supports it
 # TODO slash commands
 # TODO describe settings in command description
 # TODO counting & word counting & good stats

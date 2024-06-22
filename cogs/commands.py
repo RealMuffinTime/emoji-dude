@@ -489,12 +489,18 @@ class Commands(commands.Cog):
                             elif config.startswith("voice_channel"):
                                 setting = config[14:].replace("_", " ").title()
                                 if value is not None:
-                                    value = (await ctx.guild.fetch_channel(value)).mention
+                                    try:
+                                        value = (await ctx.guild.fetch_channel(value)).mention
+                                    except:
+                                        value = None
 
                             elif config.startswith("role"):
                                 setting = config[5:].replace("_", " ").title()
                                 if value is not None:
-                                    value = ctx.guild.get_role(value).mention
+                                    try:
+                                        value = ctx.guild.get_role(value).mention
+                                    except:
+                                        value = None
 
                             elif config.startswith("seconds"):
                                 setting = config[7:].replace("_", " ").title()
@@ -562,28 +568,33 @@ class Commands(commands.Cog):
                 if settings:
                     config = description[settings[index]][0][len(command_name) + 1:]
                     value = values[0][settings[index]]
+                    select = None
 
                     if config.startswith("bool"):
+                        select = "custom"
                         options_id = "bool"
                         name = config[5:].replace("_", " ").title()
                         options.append(discord.SelectOption(label="Yes", description="Enable this feature.", emoji="✅", default=True if value == 1 else False))
                         options.append(discord.SelectOption(label="No", description="Disable this feature.", emoji="❌", default=False if value == 1 else True))
 
                     elif config.startswith("voice_channel"):
+                        select = "voice"
                         name = config[14:].replace("_", " ").title()
-                        options.append(discord.SelectOption(label=f"None", description=f"Don't use any channel.", emoji="🔉", default=True if value is None else False))
-                        voice_channels = [channel for channel in (await ctx.guild.fetch_channels()) if str(channel.type) == "voice" or str(channel.type) == "stage_voice"]
-                        for channel in voice_channels:
-                            options.append(discord.SelectOption(label=f"{channel.id}", description=f"Use this voice channel {channel.name}.", emoji="🔉", default=True if value == channel.id else False))
+                        try:
+                            options.append(discord.SelectDefaultValue.from_channel(ctx.guild.get_channel(value)))
+                        except:
+                            options.append(None)
 
                     elif config.startswith("role"):
+                        select = "role"
                         name = config[5:].replace("_", " ").title()
-                        options.append(discord.SelectOption(label=f"None", description=f"Don't use any role.", emoji="👥", default=True if value is None else False))
-                        roles = await ctx.guild.fetch_roles()
-                        for role in roles:
-                            options.append(discord.SelectOption(label=f"{role.id}", description=f"Use the role {role.name}.", emoji="👥", default=True if value == role.id else False))
+                        try:
+                            options.append(discord.SelectDefaultValue.from_role(ctx.guild.get_role(value)) if value is not None else None)
+                        except:
+                            options.append(None)
 
                     elif config.startswith("seconds"):
+                        select = "custom"
                         name = config[8:].replace("_", " ").title()
                         time_spans = [[60, 1], [60, 5], [60, 15], [60, 30], [60, 60]]
                         custom = True
@@ -613,7 +624,7 @@ class Commands(commands.Cog):
                     else:
                         next_disabled = False
 
-                    return Commands.SettingsView(self, ctx, parameter, index, options, previous_disabled, current_label, next_disabled)
+                    return Commands.SettingsView(self, ctx, parameter, index, options, previous_disabled, current_label, next_disabled, select)
         return None
 
     class SettingsView(discord.ui.View):
@@ -630,6 +641,92 @@ class Commands(commands.Cog):
                     self.index -= 1
                 elif interaction.data["custom_id"] == "next":
                     self.index += 1
+
+                content, embed, delete, status = await Commands.generate_help_text(self.commands_object, self.ctx, self.parameter)
+                view = await Commands.generate_help_view(self.commands_object, self.ctx, self.parameter, self.index)
+                await interaction.response.edit_message(content=content, embed=embed, view=view, delete_after=delete)
+
+        class RoleSelect(discord.ui.RoleSelect):
+            def __init__(self, commands_object, ctx, parameter, index, default):
+                self.commands_object = commands_object
+                self.ctx = ctx
+                self.parameter = parameter
+                self.index = index
+                if default[0] is not None:
+                    super().__init__(min_values=0, max_values=1, default_values=default)
+                else:
+                    super().__init__(min_values=0, max_values=1)
+
+
+            async def callback(self, interaction: discord.Interaction):
+                description = await utils.execute_sql(f"DESCRIBE set_guilds", True)
+                values = await utils.execute_sql(f"SELECT * FROM set_guilds WHERE guild_id = '{interaction.guild.id}'", True)
+
+                commands = [c.name for c in self.commands_object.bot.commands]
+                lower_commands = [c.lower() for c in commands]
+                command = self.commands_object.bot.get_command(commands[lower_commands.index(self.parameter.lower())])
+                command_name = command.callback.__name__.replace("_command", "")
+
+                settings = []
+                i = 0
+                while i < len(description):
+                    if description[i][0].startswith(command_name):
+                        if not description[i][0][len(command_name) + 1:].startswith("ignore"):
+                            settings.append(i)
+                    i += 1
+
+                config = description[settings[self.index]][0][len(command_name) + 1:]
+
+                data = interaction.data["values"]
+
+                if len(data) == 1:
+                    data = f"'{data[0]}'"
+                else:
+                    data = "NULL"
+                await utils.execute_sql(f"UPDATE set_guilds SET {description[settings[self.index]][0]} = {data} WHERE guild_id ='{interaction.guild.id}'", False)
+
+                content, embed, delete, status = await Commands.generate_help_text(self.commands_object, self.ctx, self.parameter)
+                view = await Commands.generate_help_view(self.commands_object, self.ctx, self.parameter, self.index)
+                await interaction.response.edit_message(content=content, embed=embed, view=view, delete_after=delete)
+
+        class ChannelSelect(discord.ui.ChannelSelect):
+            def __init__(self, commands_object, ctx, parameter, index, default, channel_type):
+                self.commands_object = commands_object
+                self.ctx = ctx
+                self.parameter = parameter
+                self.index = index
+                if default[0] is not None:
+                    super().__init__(min_values=0, max_values=1, default_values=default, channel_types=channel_type)
+                else:
+                    super().__init__(min_values=0, max_values=1, channel_types=channel_type)
+
+            async def callback(self, interaction: discord.Interaction):
+                description = await utils.execute_sql(f"DESCRIBE set_guilds", True)
+                values = await utils.execute_sql(f"SELECT * FROM set_guilds WHERE guild_id = '{interaction.guild.id}'", True)
+
+                commands = [c.name for c in self.commands_object.bot.commands]
+                lower_commands = [c.lower() for c in commands]
+                command = self.commands_object.bot.get_command(commands[lower_commands.index(self.parameter.lower())])
+                command_name = command.callback.__name__.replace("_command", "")
+
+                settings = []
+                i = 0
+                while i < len(description):
+                    if description[i][0].startswith(command_name):
+                        if not description[i][0][len(command_name) + 1:].startswith("ignore"):
+                            settings.append(i)
+                    i += 1
+
+                config = description[settings[self.index]][0][len(command_name) + 1:]
+
+                data = interaction.data["values"]
+
+                print(data)
+                if len(data) == 1:
+                    data = f"'{data[0]}'"
+                else:
+                    data = "NULL"
+                await utils.execute_sql(f"UPDATE set_guilds SET {description[settings[self.index]][0]} = {data} WHERE guild_id ='{interaction.guild.id}'", False)
 
                 content, embed, delete, status = await Commands.generate_help_text(self.commands_object, self.ctx, self.parameter)
                 view = await Commands.generate_help_view(self.commands_object, self.ctx, self.parameter, self.index)
@@ -670,20 +767,6 @@ class Commands(commands.Cog):
                         data = 1
                     await utils.execute_sql(f"UPDATE set_guilds SET {description[settings[self.index]][0]} = {data} WHERE guild_id ='{interaction.guild.id}'", False)
 
-                elif config.startswith("voice_channel"):
-                    if data != "None":
-                        data = f"'{data}'"
-                    else:
-                        data = "NULL"
-                    await utils.execute_sql(f"UPDATE set_guilds SET {description[settings[self.index]][0]} = {data} WHERE guild_id ='{interaction.guild.id}'", False)
-
-                elif config.startswith("role"):
-                    if data != "None":
-                        data = f"'{data}'"
-                    else:
-                        data = "NULL"
-                    await utils.execute_sql(f"UPDATE set_guilds SET {description[settings[self.index]][0]} = {data} WHERE guild_id ='{interaction.guild.id}'", False)
-
                 elif config.startswith("seconds"):
                     if data.endswith("min"):
                         data = int(data.replace("min", "")) * 60
@@ -695,11 +778,16 @@ class Commands(commands.Cog):
                 view = await Commands.generate_help_view(self.commands_object, self.ctx, self.parameter, self.index)
                 await interaction.response.edit_message(content=content, embed=embed, view=view, delete_after=delete)
 
-        def __init__(self, commands_object, ctx, parameter, index, options, previous_disabled, current_label, next_disabled):
+        def __init__(self, commands_object, ctx, parameter, index, options, previous_disabled, current_label, next_disabled, select):
             self.ctx = ctx
             super().__init__()
 
-            self.add_item(Commands.SettingsView.Select(commands_object, ctx, parameter, index, options))
+            if select == "custom":
+                self.add_item(Commands.SettingsView.Select(commands_object, ctx, parameter, index, options))
+            elif select == "role":
+                self.add_item(Commands.SettingsView.RoleSelect(commands_object, ctx, parameter, index, options))
+            elif select == "voice":
+                self.add_item(Commands.SettingsView.ChannelSelect(commands_object, ctx, parameter, index, options, [discord.ChannelType.voice]))
 
             previous_style = discord.ButtonStyle.green
             self.add_item(Commands.SettingsView.Button(commands_object, ctx, parameter, index, "◀ Previous", previous_style, previous_disabled, "previous"))
