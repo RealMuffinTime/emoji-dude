@@ -2,7 +2,6 @@ import asyncio
 import datetime
 import discord
 import emoji as emojilib
-import traceback
 import unicodedata
 import utils
 from discord.ext import commands
@@ -33,8 +32,7 @@ class Commands(commands.Cog):
             else:
                 return
         except Exception:
-            trace = traceback.format_exc().rstrip("\n").split("\n")
-            utils.on_error("ping_command()", *trace)
+            utils.error("ping_command()")
             status = "error"
 
         await utils.stat_bot_commands("ping", status, ctx.author.id, guild_id)
@@ -99,8 +97,7 @@ class Commands(commands.Cog):
                                 "This command does not work in DMs.", delete_after=10, mention_author=False)
                 status = "fault"
         except Exception:
-            trace = traceback.format_exc().rstrip("\n").split("\n")
-            utils.on_error("backup_channel_command()", *trace)
+            utils.error("backup_channel_command()")
             status = "error"
 
         await utils.stat_bot_commands("backup_channel", status, ctx.author.id, guild_id)
@@ -196,8 +193,7 @@ class Commands(commands.Cog):
                 status = "fault"
 
         except Exception:
-            trace = traceback.format_exc().rstrip("\n").split("\n")
-            utils.on_error("clear_command()", *trace)
+            utils.error("clear_command()")
             status = "error"
 
         await utils.stat_bot_commands("clear", status, ctx.author.id, guild_id)
@@ -327,8 +323,7 @@ class Commands(commands.Cog):
             else:
                 return
         except Exception:
-            trace = traceback.format_exc().rstrip("\n").split("\n")
-            utils.on_error("emojis_command()", *trace)
+            utils.error("emojis_command()")
             status = "error"
 
         await utils.stat_bot_commands("emojis", status, ctx.author.id, guild_id)
@@ -359,8 +354,7 @@ class Commands(commands.Cog):
                 return
 
         except Exception:
-            trace = traceback.format_exc().rstrip("\n").split("\n")
-            utils.on_error("help_command()", *trace)
+            utils.error("help_command()")
             status = "error"
 
         await utils.stat_bot_commands("help", status, ctx.author.id, guild_id)
@@ -886,8 +880,7 @@ class Commands(commands.Cog):
                                 "This command does not work in DMs.", delete_after=10, mention_author=False)
                 status = "fault"
         except Exception:
-            trace = traceback.format_exc().rstrip("\n").split("\n")
-            utils.on_error("screenshare_command()", *trace)
+            utils.error("screenshare_command()")
             status = "error"
 
         await utils.stat_bot_commands("screenshare", status, ctx.author.id, guild_id)

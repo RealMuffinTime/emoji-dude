@@ -1,5 +1,6 @@
 import asyncio
 import datetime
+import logging
 import mariadb
 import os
 import shortuuid
@@ -26,34 +27,19 @@ def get_curr_timestamp(raw=False):
     return str(datetime.datetime.now().replace(microsecond=0))
 
 
-def on_error(error_type, *messages):
+def error(name):
+    trace = traceback.format_exc().rstrip("\n").split("\n")
     error_uuid = str(shortuuid.uuid())
-    log("error", error_type + ", " + error_uuid + ":", *messages)
+
+    logging.error(name + ", " + error_uuid + ":")
+    for message in trace:
+        logging.error(message)
+
     return error_uuid
 
 
 async def stat_bot_commands(command, status, user_id, guild_id):
     await execute_sql(f"INSERT INTO stat_bot_commands (command, status, user_id, guild_id) VALUES ('{command}', '{status}', '{user_id}', '{guild_id}')", False)
-
-
-def log(status, *messages):
-    for message in messages:
-        try:
-            status_prefix = None
-            if status == "error":
-                status_prefix = "[%s ERROR] "
-            if status == "info":
-                status_prefix = "[%s INFO] "
-            print(status_prefix % get_curr_timestamp() + message)
-            log_file = open(f"log/{os.environ['BOT_ENVIR']}_{get_start_timestamp().replace(' ', '_').replace(':', '-')}.txt",
-                            "a", encoding="utf8")
-            log_file.write(status_prefix % get_curr_timestamp() + message + "\n")
-            log_file.close()
-        except Exception:
-            status_prefix = "[%s ERROR] " % get_curr_timestamp()
-            print(f"{status_prefix}There is an error in an error reporter, HAHA, how ironic.")
-            for trace in traceback.format_exc().rstrip("\n").split("\n"):
-                print(f"{status_prefix}{trace}")
 
 
 def get_db_connection():
@@ -68,8 +54,7 @@ def get_db_connection():
             )
             db_connection.auto_reconnect = True
         except Exception:
-            trace = traceback.format_exc().rstrip("\n").split("\n")
-            on_error("get_db_connection()", *trace)
+            error("get_db_connection()")
     return db_connection
 
 
@@ -93,8 +78,9 @@ async def execute_sql(sql_term, fetch):
             if cursor.rowcount == 0 and fetch is True:
                 return []
     except Exception:
-        trace = traceback.format_exc().rstrip("\n").split("\n")
-        on_error(f"execute_sql(), fetch: {fetch}", f"{sql_term}", *trace)
+        error(f"execute_sql()")
+        logging.error(f"sql term: {sql_term}")
+        logging.error(f"fetch: {fetch}")
         return []
 
 

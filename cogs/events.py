@@ -1,5 +1,5 @@
+import logging
 import discord
-import traceback
 import utils
 from discord.ext import commands
 
@@ -13,25 +13,21 @@ class Events(commands.Cog):
     async def on_guild_join(self, guild):
         await utils.execute_sql(f"INSERT IGNORE INTO set_guilds (guild_id) VALUES ('{guild.id}')", False)
         await utils.execute_sql("INSERT INTO stat_bot_guilds (action) VALUES ('add');", False)
-        utils.log("info", f"Guild join {str(guild.id)}.")
 
     @commands.Cog.listener()
     async def on_guild_remove(self, guild):
         await utils.execute_sql("INSERT INTO stat_bot_guilds (action) VALUES ('remove');", False)
-        utils.log("info", f"Guild leave {str(guild.id)}.")
 
     @commands.Cog.listener()
     async def on_member_join(self, member):
         if member.guild.id == 669895353557975080:
             await member.add_roles(member.guild.get_role(739037531802435594))
-            utils.log("info", f"{str(member.id)} joined {str(member.guild.id)}.")
 
     @commands.Cog.listener()
     async def on_raw_member_remove(self, data):
         if data.guild_id == 669895353557975080:
             channel = self.bot.get_channel(699947018562568223)
             await channel.send(f"{data.user.mention} has parted ways with us...")
-            utils.log("info", f"{str(data.user.id)} left {str(data.guild_id)}.")
 
     @commands.Cog.listener()
     async def on_message(self, ctx):
@@ -43,16 +39,14 @@ class Events(commands.Cog):
                 return
             await self.auto_reaction_command(ctx)
         except Exception:
-            trace = traceback.format_exc().rstrip("\n").split("\n")
-            utils.on_error("on_message()", *trace)
+            utils.on_error("on_message()")
 
     @commands.Cog.listener()
     async def on_raw_message_edit(self, data):
         try:
             await self.auto_poll_thread_creation_command(data)
         except Exception:
-            trace = traceback.format_exc().rstrip("\n").split("\n")
-            utils.on_error("on_raw_message_edit()", *trace)
+            utils.on_error("on_raw_message_edit()")
 
     @commands.Cog.listener()
     async def on_voice_state_update(self, member, before, after):
@@ -182,8 +176,7 @@ class Events(commands.Cog):
                                     if guild.afk_channel.permissions_for(guild.me).move_members and last_channel.permissions_for(guild.me).move_members:
                                         await member.move_to(last_channel)
                 except Exception:
-                    trace = traceback.format_exc().rstrip("\n").split("\n")
-                    utils.on_error("managed_afk_command()", *trace)
+                    utils.on_error("managed_afk_command()")
 
     @commands.command(name='ManagedChannel', description='Automatically creates voice channels when needed, and removes unused.')
     async def managed_channel_command(self, guild):
@@ -219,7 +212,7 @@ class Events(commands.Cog):
                                     empty_channels.remove(lowest_channel[0])
                                     for channel in empty_channels:
                                         if channel.permissions_for(channel.guild.me).manage_channels:
-                                            utils.log("info", "Delete: " + channel.name + " " + str(channel.id))
+                                            logging.debug("info", "Delete: " + channel.name + " " + str(channel.id))
                                             await channel.delete()
                                 else:
                                     highest_channel = None
@@ -231,7 +224,7 @@ class Events(commands.Cog):
                                     if channel.permissions_for(channel.guild.me).manage_channels:
                                         # Discord has issues with channel display
                                         new_channel = await guild.create_voice_channel(name=keyword + " " + str(highest_channel[1] + 1), category=channel.category, position=channel.position)
-                                        utils.log("info", "Create: " + new_channel.name + " " + str(new_channel.id))
+                                        logging.debug("info", "Create: " + new_channel.name + " " + str(new_channel.id))
                             else:
                                 reset_channel = True
                         else:
@@ -244,8 +237,7 @@ class Events(commands.Cog):
 
                 except Exception:
                     await utils.execute_sql(f"UPDATE set_guilds SET managed_channel_ignore_running = 0 WHERE guild_id ='{str(guild.id)}'", False)
-                    trace = traceback.format_exc().rstrip("\n").split("\n")
-                    utils.on_error("managed_channel_command()", *trace)
+                    utils.on_error("managed_channel_command()")
 
 
 async def setup(bot):

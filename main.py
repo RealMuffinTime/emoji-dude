@@ -1,15 +1,16 @@
 import asyncio
 import datetime
 import discord
+import logging
+import logging.handlers
 import os
-import traceback
 import utils
 from discord.ext import commands
 
+# TODO add stats, add logs is wip
 # TODO slash commands
 # TODO describe settings in command description
 # TODO counting & word counting & good stats
-# TODO add stats, add logs is wip
 # TODO change managed channel system
 # TODO managed_afk move entirely to events
 # TODO good counting feature, count 1 2 4 8 15 16 23 42
@@ -32,6 +33,24 @@ bot = commands.Bot(
 bot.version = "v2.4.0"
 
 cogs = ['cogs.commands', 'cogs.events']
+
+logger = logging.getLogger()
+logger.setLevel(logging.INFO)
+
+handlerFile = logging.handlers.RotatingFileHandler(
+    filename=f"log/{os.environ['BOT_ENVIR']}_{utils.get_start_timestamp().replace(' ', '_').replace(':', '-')}.log",
+    encoding='utf-8',
+    maxBytes=32 * 1024 * 1024,
+    backupCount=21,
+)
+handlerStream = logging.StreamHandler()
+
+formatter = logging.Formatter('[{asctime} {levelname}] {message}', '%Y-%m-%d %H:%M:%S', style='{')
+handlerFile.setFormatter(formatter)
+handlerStream.setFormatter(formatter)
+
+logger.addHandler(handlerFile)
+logger.addHandler(handlerStream)
 
 
 async def main():
@@ -66,8 +85,7 @@ async def check_afk():
                                 f"ON DUPLICATE KEY UPDATE afk_managed = 1, last_seen = '{afk_member[1]}', last_channel = '{last_channel.id}', last_guild = '{last_guild.id}'",
                                 False)
                     except Exception:
-                        trace = traceback.format_exc().rstrip("\n").split("\n")
-                        utils.on_error("check_afk()", *trace)
+                        utils.error("check_afk()")
 
 
 async def cron():
@@ -90,16 +108,16 @@ async def update_guild_count():
             diff = guild_count - guild_count_db
             for count in range(diff):
                 await utils.execute_sql("INSERT INTO stat_bot_guilds (action) VALUES ('add');", False)
+        logger.info("Updated guild count.")
     except Exception:
-        trace = traceback.format_exc().rstrip("\n").split("\n")
-        utils.on_error("update_guild_count()", *trace)
+        utils.error("update_guild_count()")
 
 
 @bot.event
 async def on_ready():
-    utils.log("info", f"Logged in as {str(bot.user)}, on version {bot.version}, in session {str(utils.session_id)}.")
+    logging.info(f"Logged in as {str(bot.user)}, on version {bot.version}, in session {str(utils.session_id)}.")
     for guild in bot.guilds:
-        utils.log("info", f" - {guild.name} {guild.id}")
+        logging.info(f" - {guild.name} {guild.id}")
         await utils.execute_sql(f"INSERT IGNORE INTO set_guilds (guild_id) VALUES ('{guild.id}')", False)
         await bot.get_cog("Events").managed_channel_command(guild)
     await update_guild_count()
