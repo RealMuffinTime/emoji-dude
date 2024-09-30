@@ -36,6 +36,7 @@ class Events(commands.Cog):
     @commands.Cog.listener()
     async def on_message(self, ctx):
         try:
+            await self.auto_poll_thread_creation_command(ctx)
             if ctx.author.bot:
                 return
             if ctx.content.startswith("ed."):
@@ -59,35 +60,42 @@ class Events(commands.Cog):
 
         await self.managed_afk_command(member, before, after)
 
-    @commands.command(name='AutoPollThreadCreation', description='Automatically creates a thread, when the `Simple Poll#9879` bot creates new polls.')
+    @commands.command(name='AutoPollThreadCreation', description='Automatically creates threads on polls, Discord or  `Simple Poll#9879` bot polls are supported.')
     async def auto_poll_thread_creation_command(self, ctx):
         if isinstance(ctx, discord.RawMessageUpdateEvent):
-            raw_data = ctx.data
             try:
-                webhook_id = int(raw_data['webhook_id'])
-                content = raw_data['content']
-                channel_id = ctx.channel_id
-                message_id = ctx.message_id
-                guild_id = ctx.guild_id
-                if guild_id:
-                    guild = self.bot.get_guild(guild_id)
-                    channel = guild.get_channel(channel_id)
-                    user = guild.me
-                    data = await utils.execute_sql(f"SELECT auto_poll_thread_creation_bool_enabled FROM set_guilds WHERE guild_id ='{guild_id}'", True)
-                else:
-                    data = [[True]]
-                    channel = self.bot.get_channel(channel_id)
-                    user = channel.me
-                if data[0][0]:
-                    message = await channel.fetch_message(message_id)
-                    if webhook_id == 324631108731928587:
-                        if channel.permissions_for(user).create_public_threads and channel.permissions_for(user).read_message_history:
-                            thread = await message.create_thread(
-                                name=message.clean_content.replace("*", "").replace(":bar_chart: ", ""),
-                                auto_archive_duration=1440)
-                            await thread.leave()
-            except KeyError as e:
-                pass
+                guild = self.bot.get_guild(ctx.guild_id)
+                channel = guild.get_channel(ctx.channel_id)
+                message = await channel.fetch_message(ctx.message_id)
+
+                webhook_id = int(ctx.data['webhook_id'])
+                if webhook_id != 324631108731928587:
+                    return
+
+                name = message.clean_content.replace("*", "").replace(":bar_chart: ", "")
+                duration = 1440
+            except AttributeError as e:
+                return
+        elif isinstance(ctx, discord.message.Message) and type(ctx.channel) == discord.TextChannel:
+            message = ctx
+            if not message.poll:
+                return
+
+            name = message.poll.question
+            duration = round((message.poll.expires_at - message.poll.created_at).total_seconds()/60)
+        else:
+            return
+
+        data = await utils.execute_sql(
+            f"SELECT auto_poll_thread_creation_bool_enabled FROM set_guilds WHERE guild_id ='{message.guild.id}'", True)
+        if data[0][0] and message.thread == None:
+            if message.channel.permissions_for(message.guild.me).create_public_threads and message.channel.permissions_for(
+                    message.guild.me).read_message_history:
+                thread = await message.create_thread(
+                    name=name,
+                    auto_archive_duration=duration)
+                await thread.leave()
+
 
     @commands.command(name='AutoReaction', description='The bot reacts to specific parts in a message with emotes.\n'
                                                        'Supported phrases are `cum`, `poop`,  `cool` and derivations.')
