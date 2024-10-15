@@ -65,6 +65,8 @@ class Events(commands.Cog):
                     duration = 1440
                 except AttributeError as e:
                     return
+                except KeyError as e:
+                    return
             elif isinstance(ctx, discord.message.Message) and type(ctx.channel) == discord.TextChannel:
                 message = ctx
                 if not message.poll:
@@ -85,7 +87,7 @@ class Events(commands.Cog):
                         auto_archive_duration=duration)
                     await thread.leave()
         except Exception as e:
-            utils.on_error("auto_poll_thread_creation_command()")
+            utils.error("auto_poll_thread_creation_command()")
 
 
     @commands.command(name='AutoReaction', description='The bot reacts to specific parts in a message with emotes.\n'
@@ -117,7 +119,7 @@ class Events(commands.Cog):
                                         except discord.errors.Forbidden:
                                             pass
         except Exception as e:
-            utils.on_error("auto_reaction_command()")
+            utils.error("auto_reaction_command()")
 
     @commands.command(name='ManagedAFK', description='Auto moves full muted users after a specific amount of time to the guild set AFK channel.\n'
                                                      'The last used channel is saved, so when a user is no longer full mute, he will be automatically moved to his last voice channel.\n'
@@ -176,7 +178,7 @@ class Events(commands.Cog):
                                     if guild.afk_channel.permissions_for(guild.me).move_members and last_channel.permissions_for(guild.me).move_members:
                                         await member.move_to(last_channel)
         except Exception:
-            utils.on_error("managed_afk_command()")
+            utils.error("managed_afk_command()")
 
     @commands.command(name='ManagedChannel', description='Automatically creates voice channels when needed, and removes unused.')
     async def managed_channel_command(self, guild):
@@ -236,7 +238,7 @@ class Events(commands.Cog):
                         await utils.execute_sql(f"UPDATE set_guilds SET managed_channel_ignore_running = 0 WHERE guild_id ='{str(guild.id)}'", False)
         except Exception:
             await utils.execute_sql(f"UPDATE set_guilds SET managed_channel_ignore_running = 0 WHERE guild_id ='{str(guild.id)}'", False)
-            utils.on_error("managed_channel_command()")
+            utils.error("managed_channel_command()")
 
 
 async def setup(bot):
