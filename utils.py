@@ -40,6 +40,9 @@ def error(name):
 
 async def stat_bot_commands(command, status, user_id, guild_id):
     await execute_sql(f"INSERT INTO stat_bot_commands (command, status, user_id, guild_id) VALUES ('{command}', '{status}', '{user_id}', '{guild_id}')", False)
+    user_id = f"'{user_id}'" if user_id else "NULL"
+    guild_id = f"'{guild_id}'" if guild_id else "NULL"
+    await execute_sql(f"INSERT INTO stat_bot_commands (command, status, user_id, guild_id) VALUES ('{command}', '{status}', {user_id}, {guild_id})", False)
 
 
 def get_db_connection():

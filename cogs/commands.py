@@ -15,7 +15,7 @@ class Commands(commands.Cog):
     @commands.command(name="ping", description="PONG! Pings and message round-trips.")
     async def ping_command(self, ctx):
         status = "ongoing"
-        guild_id = 0
+        guild_id = None
         try:
             if ctx.guild:
                 guild_id = ctx.guild.id
@@ -43,7 +43,7 @@ class Commands(commands.Cog):
                       usage="<from_channel_id> <to_channel_id>")
     async def backup_channel_command(self, ctx):
         status = "ongoing"
-        guild_id  = 0
+        guild_id  = None
         try:
             if ctx.guild:
                 guild_id = ctx.guild.id
@@ -108,7 +108,7 @@ class Commands(commands.Cog):
                       usage="<user>", aliases=["clean"])
     async def clear_command(self, ctx, member=None):
         status = "ongoing"
-        guild_id = 0
+        guild_id = None
         try:
             if ctx.guild:
                 guild_id = ctx.guild.id
@@ -207,7 +207,7 @@ class Commands(commands.Cog):
                       usage="<emoji_combinations> <amount>")
     async def emojis_command(self, ctx, *args):
         status = "ongoing"
-        guild_id = 0
+        guild_id = None
         try:
             if ctx.guild:
                 guild_id = ctx.guild.id
@@ -336,7 +336,7 @@ class Commands(commands.Cog):
                       aliases=["commands", "command", "settings", "setting"], usage="<category/command>")
     async def help_command(self, ctx, parameter=None):
         status = "ongoing"
-        guild_id = 0
+        guild_id = None
         try:
             if ctx.guild:
                 guild_id = ctx.guild.id
@@ -523,7 +523,7 @@ class Commands(commands.Cog):
                        "Invalid category or command specified.")
             return content, None, 10, "fault"
 
-        embed.add_field(name="", value=f"[{self.bot.user.display_name} in the web](https://bots.muffintime.tk/{self.bot.user.display_name.replace(' ', '%20')}/)", inline=False)
+        embed.add_field(name="", value=f"[{self.bot.user.display_name} in the web](https://bots.muffintime.tk/{self.bot.user.display_name.replace(' ', '-')}/)", inline=False)
 
         return None, embed, None, status
 
@@ -857,7 +857,7 @@ class Commands(commands.Cog):
                                   "Why do I keep it then?")
     async def screenshare_command(self, ctx):
         status = "ongoing"
-        guild_id = 0
+        guild_id = None
         try:
             if ctx.guild:
                 guild_id = ctx.guild.id
