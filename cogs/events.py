@@ -20,14 +20,11 @@ class Events(commands.Cog):
 
     @commands.Cog.listener()
     async def on_member_join(self, member):
-        if member.guild.id == 669895353557975080:
-            await member.add_roles(member.guild.get_role(739037531802435594))
+        await self.member_join_command(member)
 
     @commands.Cog.listener()
     async def on_raw_member_remove(self, data):
-        if data.guild_id == 669895353557975080:
-            channel = self.bot.get_channel(699947018562568223)
-            await channel.send(f"{data.user.mention} has parted ways with us...")
+        await self.member_leave_command(data)
 
     @commands.Cog.listener()
     async def on_message(self, ctx):
@@ -73,7 +70,7 @@ class Events(commands.Cog):
                     return
 
                 name = message.poll.question
-                duration = round((message.poll.expires_at - message.poll.created_at).total_seconds()/60)
+                duration = round((message.poll.expires_at - message.poll.created_at).total_seconds() / 60)
             else:
                 return
 
@@ -89,9 +86,7 @@ class Events(commands.Cog):
         except Exception as e:
             utils.error("auto_poll_thread_creation_command()")
 
-
-    @commands.command(name='AutoReaction', description='The bot reacts to specific parts in a message with emotes.\n'
-                                                       'Supported phrases are `cum`, `poop`,  `cool` and derivations.')
+    @commands.command(name='AutoReaction', description='The bot reacts to specific parts in a message with emotes.\nSupported phrases are `cum`, `poop`,  `cool` and derivations.')
     async def auto_reaction_command(self, ctx):
         try:
             if isinstance(ctx, discord.Message):
@@ -239,6 +234,37 @@ class Events(commands.Cog):
         except Exception:
             await utils.execute_sql(f"UPDATE set_guilds SET managed_channel_ignore_running = 0 WHERE guild_id ='{str(guild.id)}'", False)
             utils.error("managed_channel_command()")
+
+    @commands.command(name='MemberJoin', description='Automatically sends join message on member join. And adds a role.')
+    async def member_join_command(self, member):
+        try:
+            if isinstance(member, discord.Member):
+                data = await utils.execute_sql(
+                    f"SELECT member_join_bool_enabled, member_join_text_channel_channel, member_join_variable_message, member_join_role_auto_role FROM set_guilds WHERE guild_id ='{member.guild.id}'",
+                    True)
+                if data[0][0]:
+                    channel = member.guild.get_channel(data[0][1])
+                    if data[0][2] != "" and channel is not None and channel.permissions_for(member.guild.me).send_messages:
+                        await channel.send(data[0][2].replace("%user%", member.mention))
+                    role = member.guild.get_role(data[0][3])
+                    if role is not None and member.guild.me.guild_permissions.manage_roles:
+                        await member.add_roles(role)
+        except Exception:
+            utils.error("member_join_command()")
+
+    @commands.command(name='MemberLeave', description='Automatically sends leave message on member leave.')
+    async def member_leave_command(self, raw_data):
+        try:
+            if not isinstance(raw_data, discord.ext.commands.Context):
+                data = await utils.execute_sql(
+                    f"SELECT member_leave_bool_enabled, member_leave_text_channel_channel, member_leave_variable_message FROM set_guilds WHERE guild_id ='{raw_data.guild_id}'",
+                    True)
+                if data[0][0]:
+                    channel = self.bot.get_channel(data[0][1])
+                    if data[0][2] != "" and channel is not None and channel.permissions_for(channel.guild.me).send_messages:
+                        await channel.send(data[0][2].replace("%user%", raw_data.user.mention))
+        except Exception:
+            utils.error("member_leave_command()")
 
 
 async def setup(bot):

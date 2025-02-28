@@ -15,7 +15,6 @@ from discord.ext import commands
 # TODO managed_afk move entirely to events
 # TODO good counting feature, count 1 2 4 8 15 16 23 42
 # TODO optimize permission return
-# TODO bugfix emoji command ed.e :regional_indicator_e::a::regional_indicator_t::heavy_minus_sign::flag_my: :heavy_minus_sign::a::flag_ss: :heavy_minus_sign: 10
 
 bot = commands.Bot(
     activity=discord.Streaming(

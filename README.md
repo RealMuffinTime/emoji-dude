@@ -69,4 +69,11 @@ To run the bot yourself you need to set environment variables. As example: `BOT_
 ##### ManagedChannel
 * Automatically creates voice channels when needed, and removes unused.
 
-*© 2020 - 2024*
+##### MemberJoin
+* Send a customizable message on member join. 
+* Can also directly assign a role to the new user.
+
+##### MemberLeave
+* Send a customizable message on member leave.
+
+*© 2020 - 2025*

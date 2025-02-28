@@ -488,6 +488,14 @@ class Commands(commands.Cog):
                                     except:
                                         value = None
 
+                            elif config.startswith("text_channel"):
+                                setting = config[13:].replace("_", " ").title()
+                                if value is not None:
+                                    try:
+                                        value = (await ctx.guild.fetch_channel(value)).mention
+                                    except:
+                                        value = None
+
                             elif config.startswith("role"):
                                 setting = config[5:].replace("_", " ").title()
                                 if value is not None:
@@ -499,8 +507,14 @@ class Commands(commands.Cog):
                             elif config.startswith("seconds"):
                                 setting = config[7:].replace("_", " ").title()
                                 value = f"`{str(value)}s`"
+
+                            elif config.startswith("variable"):
+                                setting = config[8:].replace("_", " ").title()
+                                value = f"{str(value)}".replace("%user%", ctx.author.mention)
+
                             else:
                                 setting = config
+
                             settings += f"**{setting}:** {value}\n"
                     i += 1
 
@@ -579,6 +593,14 @@ class Commands(commands.Cog):
                         except:
                             options.append(None)
 
+                    elif config.startswith("text_channel"):
+                        select = "text"
+                        name = config[13:].replace("_", " ").title()
+                        try:
+                            options.append(discord.SelectDefaultValue.from_channel(ctx.guild.get_channel(value)))
+                        except:
+                            options.append(None)
+
                     elif config.startswith("role"):
                         select = "role"
                         name = config[5:].replace("_", " ").title()
@@ -602,6 +624,12 @@ class Commands(commands.Cog):
                         options.append(discord.SelectOption(label="Custom value...", description="Set a new custom duration.", emoji="⌛", default=False))
                         if custom:
                             options.append(discord.SelectOption(label=f"Custom value: {value}s", description="Use this duration.", emoji="⌛", default=True))
+
+                    elif config.startswith("variable"):
+                        select = "custom"
+                        name = config[9:].replace("_", " ").title()
+                        options.append(discord.SelectOption(label="Custom message...", description="Set a new custom message.", emoji="🗨", default=False))
+                        options.append(discord.SelectOption(label=f"Custom message: {value}", description="Use the current message.", emoji="🗨", default=True))
 
                     else:
                         name = config
@@ -715,7 +743,6 @@ class Commands(commands.Cog):
 
                 data = interaction.data["values"]
 
-                print(data)
                 if len(data) == 1:
                     data = f"'{data[0]}'"
                 else:
@@ -766,11 +793,23 @@ class Commands(commands.Cog):
                         data = int(data.replace("min", "")) * 60
                         await utils.execute_sql(f"UPDATE set_guilds SET {description[settings[self.index]][0]} = '{data}' WHERE guild_id ='{interaction.guild.id}'", False)
                     else:
-                        await interaction.response.send_modal(Commands.Modal(self.commands_object, self.ctx, self.parameter, self.index, "Set a new duration", "Select the new duration in seconds", str(values[0][settings[self.index]]), "Custom duration in seconds..."))
+                        await interaction.response.send_modal(
+                            Commands.Modal(self.commands_object, self.ctx, self.parameter, self.index, "Set a new duration",
+                                           "Select the new duration in seconds", str(values[0][settings[self.index]]),
+                                           "Custom duration in seconds..."))
+
+                elif config.startswith("variable"):
+                    await interaction.response.send_modal(
+                        Commands.Modal(self.commands_object, self.ctx, self.parameter, self.index, "Set a new message",
+                                       "Write your custom message", str(values[0][settings[self.index]]),
+                                       "Message..."))
 
                 content, embed, delete, status = await Commands.generate_help_text(self.commands_object, self.ctx, self.parameter)
                 view = await Commands.generate_help_view(self.commands_object, self.ctx, self.parameter, self.index)
-                await interaction.response.edit_message(content=content, embed=embed, view=view, delete_after=delete)
+                try:
+                    await interaction.response.edit_message(content=content, embed=embed, view=view, delete_after=delete)
+                except discord.errors.InteractionResponded:
+                    await interaction.edit_original_response(content=content, embed=embed, view=view)
 
         def __init__(self, commands_object, ctx, parameter, index, options, previous_disabled, current_label, next_disabled, select):
             self.ctx = ctx
@@ -782,6 +821,8 @@ class Commands(commands.Cog):
                 self.add_item(Commands.SettingsView.RoleSelect(commands_object, ctx, parameter, index, options))
             elif select == "voice":
                 self.add_item(Commands.SettingsView.ChannelSelect(commands_object, ctx, parameter, index, options, [discord.ChannelType.voice]))
+            elif select == "text":
+                self.add_item(Commands.SettingsView.ChannelSelect(commands_object, ctx, parameter, index, options, [discord.ChannelType.text]))
 
             previous_style = discord.ButtonStyle.green
             self.add_item(Commands.SettingsView.Button(commands_object, ctx, parameter, index, "◀ Previous", previous_style, previous_disabled, "previous"))
@@ -831,13 +872,17 @@ class Commands(commands.Cog):
                 i += 1
 
             data = interaction.data["components"][0]["components"][0]["value"]
-            try:
-                data = int(data)
-                await utils.execute_sql(f"UPDATE set_guilds SET {description[settings[self.index]][0]} = '{data}' WHERE guild_id ='{interaction.guild.id}'", False)
-            except:
-                message = await interaction.response.edit_message(content=f"**Help Command** - Dismissed <t:{int(datetime.datetime.now().timestamp()) + 10}:R>\n"
-                                                                          "Invalid value entered.", embed=None, view=None)
-                await asyncio.sleep(10)
+
+            config = description[settings[self.index]][0][len(command_name) + 1:]
+
+            if config.startswith("seconds"):
+                try:
+                    data = int(data)
+                    await utils.execute_sql(f"UPDATE set_guilds SET {description[settings[self.index]][0]} = '{data}' WHERE guild_id ='{interaction.guild.id}'", False)
+                except:
+                    pass
+            elif config.startswith("variable"):
+                await utils.execute_sql(f"UPDATE set_guilds SET {description[settings[self.index]][0]} = %s WHERE guild_id ='{interaction.guild.id}'", False, str(data))
 
             content, embed, delete, status = await Commands.generate_help_text(self.commands_object, self.ctx, self.parameter)
             view = await Commands.generate_help_view(self.commands_object, self.ctx, self.parameter, self.index)

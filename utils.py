@@ -60,7 +60,7 @@ def get_db_connection():
     return db_connection
 
 
-async def execute_sql(sql_term, fetch):
+async def execute_sql(sql_term, fetch, *args):
     try:
         cursor = get_db_connection().cursor(buffered=True)
         cursor.execute(f"USE `{os.environ['BOT_DATABASE_NAME']}`")
@@ -72,7 +72,7 @@ async def execute_sql(sql_term, fetch):
                 cursor.execute(f"UPDATE stat_bot_online SET last_heartbeat = '{get_curr_timestamp()}' WHERE id = '{session_id}'")
 
         if sql_term != "":
-            cursor.execute(sql_term)
+            cursor.execute(sql_term, [*args])
         get_db_connection().commit()
         if sql_term != "":
             if cursor.rowcount > 0 and fetch is True:
