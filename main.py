@@ -29,7 +29,7 @@ bot = commands.Bot(
     owner_id=412235309204635649
 )
 
-bot.version = "v2.4.0"
+bot.version = "v2.4.1"
 
 cogs = ['cogs.commands', 'cogs.events']
 
